@@ -1,3 +1,4 @@
+// ESLint规则配置文件，适用于TypeScript和React项目
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -8,7 +9,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores(['dist']),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx}'], // 适用于所有TypeScript和TSX文件
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
