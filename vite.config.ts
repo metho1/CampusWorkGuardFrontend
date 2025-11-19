@@ -4,6 +4,7 @@
 
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,5 +14,10 @@ export default defineConfig({
   //   open: true
   // },
   // 可选：路径别名
-  // resolve: { alias: { "@": "/src" } }
+  resolve: {
+    alias: {
+      // "@": "/src"
+      "@": path.resolve(__dirname, "src"),
+    }
+  }
 })
