@@ -1,10 +1,12 @@
 // src/components/LoginForm/LoginForm.tsx
 import React, {useState} from "react";
-import {Button, Checkbox, Form, Input, message, Tabs} from "antd";
-import {PhoneOutlined} from "@ant-design/icons";
+import {Button, Checkbox, Form, Input, message, Select, Tabs} from "antd";
+// import {PhoneOutlined} from "@ant-design/icons";
+import {LockOutlined, UserOutlined} from '@ant-design/icons';
 import {loginApi, sendCodeApi} from "@/api/auth.ts";
 
 const {TabPane} = Tabs;
+const {Option} = Select;
 
 const LoginForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -35,37 +37,81 @@ const LoginForm: React.FC = () => {
       </Tabs>
 
       <Form onFinish={onFinish} layout="vertical">
+        {/* 选择学校 */}
         <Form.Item
-          name="phone"
-          label="手机号"
+          name="school"
+          rules={[{required: true, message: "请选择学校"}]}
+        >
+          <Select
+            showSearch
+            size="large"
+            placeholder="学校"
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={[
+              {
+                value: 'whut',
+                label: '武汉理工大学',
+              },
+              {
+                value: 'whu',
+                label: '武汉大学',
+              },
+              {
+                value: 'hust',
+                label: '华中科技大学',
+              },
+              {
+                value: 'ccnu',
+                label: '华中师范大学',
+              },
+              {
+                value: 'thu',
+                label: '清华大学',
+              },
+              {
+                value: 'pku',
+                label: '北京大学',
+              },
+              {
+                value: 'zju',
+                label: '浙江大学',
+              },
+            ]}
+          />
+        </Form.Item>
+        {/* 学号 */}
+        <Form.Item
+          name="studentId"
           rules={[
-            {required: true, message: "请输入手机号"},
-            {pattern: /^1[3-9]\d{9}$/, message: "手机号格式不正确"},
+            {required: true, message: "请输入学号"}
           ]}
         >
           <Input
             size="large"
-            prefix={<PhoneOutlined/>}
-            placeholder="请输入手机号"
+            prefix={<UserOutlined/>}
+            placeholder=" 学号"
           />
         </Form.Item>
-
+        {/* 密码 */}
         <Form.Item
-          name="code"
-          label="验证码"
-          rules={[{required: true, message: "请输入验证码"}]}
+          name="password"
+          rules={[{required: true, message: "请输入密码"}]}
         >
           <Input
             size="large"
-            placeholder="短信验证码"
-            suffix={
-              <Button type="link" onClick={sendCode}>
-                发送验证码
-              </Button>
-            }
+            placeholder=" 密码"
+            prefix={<LockOutlined/>}
+            type="password"
+            // suffix={
+            //   <Button type="link" onClick={sendCode}>
+            //     发送验证码
+            //   </Button>
+            // }
           />
         </Form.Item>
-
+        {/* 登录按钮 */}
         <Button
           type="primary"
           htmlType="submit"
@@ -75,12 +121,27 @@ const LoginForm: React.FC = () => {
         >
           登录
         </Button>
-
+        {/* 邮箱验证码登录 / 去注册 */}
+        <div
+          style={{
+            marginTop: 6,
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Button type="link" style={{padding: 0}}>
+            忘记密码？
+          </Button>
+          <Button type="link" style={{padding: 0}}>
+            没有账号？去注册
+          </Button>
+        </div>
+        {/* 用户协议勾选 */}
         <div style={{marginTop: 16, textAlign: "center"}}>
           <Checkbox/>
-          <span style={{marginLeft: 8}}>
-						    我已阅读并同意《用户协议》《隐私政策》
-           </span>
+          <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>
+            我已阅读并同意《用户协议》《隐私政策》
+          </span>
         </div>
       </Form>
     </>
