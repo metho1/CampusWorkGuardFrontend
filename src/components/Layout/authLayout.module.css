@@ -2,9 +2,9 @@
 
 .container {
     display: flex;
-    width: 100%;
     height: 100vh;
     background: #e8f8f8;
+    /*background-color: aqua;*/
 }
 
 .leftPanel {

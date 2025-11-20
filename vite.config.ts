@@ -9,11 +9,12 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // server: {
-  //   port: 5173,
-  //   open: true
-  // },
-  // 可选：路径别名
+  server: {
+    host: "0.0.0.0", // 允许局域网访问
+    port: 5173,
+    open: true
+  },
+  // 路径别名
   resolve: {
     alias: {
       // "@": "/src"
