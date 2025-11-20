@@ -1,8 +1,8 @@
-// src/pages/Login/LoginForm.tsx
+// src/components/LoginForm/LoginForm.tsx
 import React, {useState} from "react";
 import {Button, Checkbox, Form, Input, message, Tabs} from "antd";
 import {PhoneOutlined} from "@ant-design/icons";
-import {loginApi, sendCodeApi} from "@/api/auth";
+import {loginApi, sendCodeApi} from "@/api/auth.ts";
 
 const {TabPane} = Tabs;
 
@@ -28,7 +28,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div style={{width: "100%"}}>
+    <>
       <Tabs defaultActiveKey="jobSeeker" centered>
         <TabPane tab="我要找工作" key="jobSeeker"/>
         <TabPane tab="我要招聘" key="employer"/>
@@ -40,7 +40,7 @@ const LoginForm: React.FC = () => {
           label="手机号"
           rules={[
             {required: true, message: "请输入手机号"},
-            {pattern: /^1[3-9]\\d{9}$/, message: "手机号格式不正确"},
+            {pattern: /^1[3-9]\d{9}$/, message: "手机号格式不正确"},
           ]}
         >
           <Input
@@ -73,7 +73,7 @@ const LoginForm: React.FC = () => {
           block
           loading={loading}
         >
-          登录 / 注册
+          登录
         </Button>
 
         <div style={{marginTop: 16, textAlign: "center"}}>
@@ -83,7 +83,7 @@ const LoginForm: React.FC = () => {
            </span>
         </div>
       </Form>
-    </div>
+    </>
   );
 };
 
