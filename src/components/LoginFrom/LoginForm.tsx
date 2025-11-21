@@ -1,18 +1,20 @@
 // src/components/LoginForm/LoginForm.tsx
 import React, {useState} from "react";
-import {Button, Checkbox, Form, Input, message, Select, Tabs, Upload} from "antd";
+import {Button, Checkbox, Form, Input, message, Select, Tabs} from "antd";
 // import {PhoneOutlined} from "@ant-design/icons";
-import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  LockOutlined,
-  MailOutlined,
-  UploadOutlined,
-  UserOutlined
-} from '@ant-design/icons';
+import {EyeInvisibleOutlined, EyeTwoTone, LockOutlined, MailOutlined, UserOutlined} from '@ant-design/icons';
 import {loginApi, sendCodeApi} from "@/api/auth.ts";
 
 const {TabPane} = Tabs;
+const options = [
+  {value: 'whut', label: '武汉理工大学'},
+  {value: 'whu', label: '武汉大学'},
+  {value: 'hust', label: '华中科技大学'},
+  {value: 'ccnu', label: '华中师范大学'},
+  {value: 'thu', label: '清华大学'},
+  {value: 'pku', label: '北京大学'},
+  {value: 'zju', label: '浙江大学'},
+];
 
 const LoginForm: React.FC = () => {
   // 根据 mode 来决定：渲染哪个 Form 表单内容，渲染哪些按钮（忘记密码 / 去注册 / 返回登录）
@@ -53,107 +55,78 @@ const LoginForm: React.FC = () => {
         {/* ---------- 登录模式 ---------- */}
         {mode === "login" && (
           <>
-        {/* 学校 */}
-          <Form.Item
-            name="school"
-            rules={[{required: true, message: "请选择学校"}]}
-          >
-            <Select
-              showSearch
-              size="large"
-              placeholder="学校"
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              options={[
-                {
-                  value: 'whut',
-                  label: '武汉理工大学',
-                },
-                {
-                  value: 'whu',
-                  label: '武汉大学',
-                },
-                {
-                  value: 'hust',
-                  label: '华中科技大学',
-                },
-                {
-                  value: 'ccnu',
-                  label: '华中师范大学',
-                },
-                {
-                  value: 'thu',
-                  label: '清华大学',
-                },
-                {
-                  value: 'pku',
-                  label: '北京大学',
-                },
-                {
-                  value: 'zju',
-                  label: '浙江大学',
-                },
+            {/* 学校 */}
+            <Form.Item
+              name="school"
+              rules={[{required: true, message: "请选择学校"}]}
+            >
+              <Select
+                showSearch
+                size="large"
+                placeholder="学校"
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+                options= {options}
+              />
+            </Form.Item>
+            {/* 学号 */}
+            <Form.Item
+              name="studentId"
+              rules={[
+                {required: true, message: "请输入学号"}
               ]}
-            />
-          </Form.Item>
-        {/* 学号 */}
-          <Form.Item
-            name="studentId"
-            rules={[
-              {required: true, message: "请输入学号"}
-            ]}
-          >
-            <Input
+            >
+              <Input
+                size="large"
+                prefix={<UserOutlined/>}
+                placeholder=" 学号"
+              />
+            </Form.Item>
+            {/* 密码 */}
+            <Form.Item
+              name="password"
+              rules={[{required: true, message: "请输入密码"}]}
+            >
+              <Input.Password
+                size="large"
+                placeholder=" 密码"
+                prefix={<LockOutlined/>}
+                iconRender={(visible) => (visible ? <EyeTwoTone/> : <EyeInvisibleOutlined/>)}
+              />
+            </Form.Item>
+            {/* 登录按钮 */}
+            <Button
+              type="primary"
+              htmlType="submit"
               size="large"
-              prefix={<UserOutlined/>}
-              placeholder=" 学号"
-            />
-          </Form.Item>
-        {/* 密码 */}
-          <Form.Item
-            name="password"
-            rules={[{required: true, message: "请输入密码"}]}
-          >
-            <Input.Password
-              size="large"
-              placeholder=" 密码"
-              prefix={<LockOutlined/>}
-              iconRender={(visible) => (visible ? <EyeTwoTone/> : <EyeInvisibleOutlined/>)}
-            />
-          </Form.Item>
-        {/* 登录按钮 */}
-          <Button
-            type="primary"
-            htmlType="submit"
-            size="large"
-            block
-            loading={loading}
-          >
-            登录
-          </Button>
-        {/* 表单底部操作 */}
-          <div
-            style={{
-              marginTop: 6,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <Button type="link" onClick={() => setMode("forgot")} style={{padding: 0}}>
-              忘记密码？
+              block
+              loading={loading}
+            >
+              登录
             </Button>
-            <Button type="link" onClick={() => setMode("register")} style={{padding: 0}}>
-              没有账号？去注册
-            </Button>
-          </div>
-        {/* 用户协议勾选 */}
-          <div style={{marginTop: 16, textAlign: "center"}}>
-            <Checkbox/>
-            <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>
+            {/* 表单底部操作 */}
+            <div
+              style={{
+                marginTop: 6,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Button type="link" onClick={() => setMode("forgot")} style={{padding: 0}}>
+                邮箱登录
+              </Button>
+              <Button type="link" onClick={() => setMode("register")} style={{padding: 0}}>
+                没有账号？去注册
+              </Button>
+            </div>
+            {/* 用户协议勾选 */}
+            <div style={{marginTop: 16, textAlign: "center"}}>
+              <Checkbox/>
+              <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>
             我已阅读并同意《用户协议》《隐私政策》
           </span>
-          </div>
+            </div>
           </>
         )}
         {/* ---------- 忘记密码模式 ---------- */}
@@ -178,18 +151,18 @@ const LoginForm: React.FC = () => {
                 size="large"
                 placeholder="验证码"
                 suffix={
-                  <Button type="link" onClick={sendCode}>
+                  <Button size="small" style={{padding: 0, margin: 0}} type="link" onClick={sendCode}>
                     发送验证码
                   </Button>
                 }
               />
             </Form.Item>
             <Button type="primary" htmlType="submit" size="large" block>
-              邮箱验证码登录
+              邮箱登录
             </Button>
             <div style={{marginTop: 6}}>
               <Button type="link" onClick={() => setMode("login")} style={{padding: 0}}>
-                返回登录
+                密码登录
               </Button>
             </div>
           </>
@@ -199,8 +172,7 @@ const LoginForm: React.FC = () => {
           <>
             {/* 学校 */}
             <Form.Item name="school" rules={[{required: true, message: "请选择学校"}]}>
-              <Select size="large" placeholder="学校">
-              </Select>
+              <Select showSearch size="large" placeholder="学校" options= {options}/>
             </Form.Item>
             {/* 学号 */}
             <Form.Item name="studentId" rules={[{required: true, message: "请输入学号"}]}>
@@ -214,22 +186,20 @@ const LoginForm: React.FC = () => {
               <Input size="large" prefix={<MailOutlined/>} placeholder=" 邮箱"/>
             </Form.Item>
             {/* 邮箱验证码 */}
-            <Form.Item name="code" rules={[{required: true,message: "请输入验证码"}]}>
+            <Form.Item name="code" rules={[{required: true, message: "请输入验证码"}]}>
               <Input
                 size="large"
                 placeholder="验证码"
                 suffix={
-                  <Button type="link" onClick={sendCode}>
+                  <Button size="small" style={{padding: 0, margin: 0}} type="link" onClick={sendCode}>
                     发送验证码
                   </Button>
                 }
               />
             </Form.Item>
-            {/* 上传证件 */}
-            <Form.Item name="certificationCode">
-              <Upload>
-                <Button icon={<UploadOutlined/>}>上传学生证/身份证</Button>
-              </Upload>
+            {/* 学信网在线验证码 */}
+            <Form.Item name="vCode" rules={[{required: true, message: "请输入学信网在线验证码"}]}>
+              <Input size="large" placeholder="学信网在线验证码"/>
             </Form.Item>
             <Button type="primary" htmlType="submit" size="large" block>
               注册
