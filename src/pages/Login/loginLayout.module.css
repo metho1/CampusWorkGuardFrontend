@@ -31,12 +31,12 @@
 /* 登录卡片（浮在右侧） */
 .formWrapper {
     position: absolute;
-    right: 80px;
+    right: 100px;
     top: 50%;
     transform: translateY(-50%);
 
-    width: 400px;
-    padding: 36px 32px;
+    width: 450px;
+    padding: 36px 50px;
 
     background: rgba(255, 255, 255, 0.9);
     border-radius: 12px;
@@ -55,7 +55,7 @@
 /* 左侧文字区（在背景图上） */
 .textArea {
     position: absolute;
-    left: 80px;
+    left: 100px;
     top: 40%;
     transform: translateY(-50%);
     color: #fff;
@@ -79,7 +79,7 @@
     /*background-color: midnightblue;*/
     /*color: white;*/
     text-align: center;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 /*.leftPanel {*/
