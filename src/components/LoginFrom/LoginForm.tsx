@@ -1,20 +1,11 @@
 // src/components/LoginForm/LoginForm.tsx
 import React, {useState} from "react";
-import {Button, Checkbox, Form, Input, message, Select, Tabs} from "antd";
-// import {PhoneOutlined} from "@ant-design/icons";
+import {Button, Checkbox, Form, Input, message, Tabs} from "antd";
 import {EyeInvisibleOutlined, EyeTwoTone, LockOutlined, MailOutlined, UserOutlined} from '@ant-design/icons';
 import {loginApi, sendCodeApi} from "@/api/auth.ts";
+import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
 
 const {TabPane} = Tabs;
-const options = [
-  {value: 'whut', label: '武汉理工大学'},
-  {value: 'whu', label: '武汉大学'},
-  {value: 'hust', label: '华中科技大学'},
-  {value: 'ccnu', label: '华中师范大学'},
-  {value: 'thu', label: '清华大学'},
-  {value: 'pku', label: '北京大学'},
-  {value: 'zju', label: '浙江大学'},
-];
 
 const LoginForm: React.FC = () => {
   // 根据 mode 来决定：渲染哪个 Form 表单内容，渲染哪些按钮（忘记密码 / 去注册 / 返回登录）
@@ -60,15 +51,7 @@ const LoginForm: React.FC = () => {
               name="school"
               rules={[{required: true, message: "请选择学校"}]}
             >
-              <Select
-                showSearch
-                size="large"
-                placeholder="学校"
-                filterOption={(input, option) =>
-                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                }
-                options= {options}
-              />
+              <SchoolDebounceSelect/>
             </Form.Item>
             {/* 学号 */}
             <Form.Item
@@ -172,7 +155,7 @@ const LoginForm: React.FC = () => {
           <>
             {/* 学校 */}
             <Form.Item name="school" rules={[{required: true, message: "请选择学校"}]}>
-              <Select showSearch size="large" placeholder="学校" options= {options}/>
+              <SchoolDebounceSelect/>
             </Form.Item>
             {/* 学号 */}
             <Form.Item name="studentId" rules={[{required: true, message: "请输入学号"}]}>
