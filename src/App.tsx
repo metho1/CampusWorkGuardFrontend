@@ -2,16 +2,11 @@
 // import { useState } from 'react'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
-import {Navigate, Route, Routes} from "react-router-dom";
-import Login from "@/pages/Login/Login";
+import {useRoutes} from "react-router-dom";
+import {routes} from "@/router/index.tsx";
 
 function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login"/>}/>
-      <Route path="/login" element={<Login/>}/>
-    </Routes>
-  )
+  return useRoutes(routes);
 }
 
 export default App
