@@ -68,10 +68,11 @@ const MainLayout: React.FC = () => {
         collapsed={collapsed}
         trigger={null}
         theme="light"
+        width={220}
         className={styles.sider}
       >
         <div className={styles.logo}>
-          {!collapsed ? "大学生兼职保障系统" : "兼职"}
+          {collapsed ? "兼职" : "大学生兼职保障系统"}
         </div>
 
         <Menu
@@ -99,9 +100,8 @@ const MainLayout: React.FC = () => {
           <div className={styles.headerRight}>
             <Dropdown menu={userMenu}>
               <Avatar
-                size="small"
                 src="https://i.pravatar.cc/150?img=3"
-                style={{cursor: "pointer"}}
+                className={styles.avatar}
               />
             </Dropdown>
 

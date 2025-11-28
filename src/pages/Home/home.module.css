@@ -3,6 +3,7 @@
   height: 100vh;
 }
 
+/*左侧菜单栏*/
 .sider {
   border-right: 1px solid #f0f0f0;
 }
@@ -16,6 +17,7 @@
   font-weight: bold;
 }
 
+/*顶部栏*/
 .header {
   background: #fff;
   padding: 0;
@@ -32,6 +34,10 @@
   gap: 12px;
 }
 
+.avatar {
+  cursor: pointer;
+}
+
 .username {
   font-size: 14px;
   color: #333;
@@ -42,5 +48,6 @@
   padding: 20px;
   background: #fff;
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   min-height: 85vh;
 }

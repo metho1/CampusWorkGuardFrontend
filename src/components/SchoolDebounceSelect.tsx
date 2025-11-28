@@ -1,3 +1,4 @@
+// src/components/SchoolDebounceSelect.tsx
 // 带防抖的远程搜索下拉选择框
 
 // useState：管理组件内部状态，如 loading、options
@@ -51,50 +52,51 @@ function DebounceSelect<
       size="large"
       labelInValue //选择返回 {value, label} 结构
       filterOption={false} //关闭本地过滤，启用远程搜索
+      showSearch
+      allowClear
       onSearch={debounceFetcher} //输入触发防抖搜索
       notFoundContent={fetching ? <Spin size="small"/> : '请输入'}
       {...props} //填入异步数据
       options={options}
-      // optionRender={(option) => (
-      //   <div style={{display: 'flex', alignItems: 'center'}}>
-      //     {option.label}
-      //   </div>
-      // )}
     />
   );
 }
 
-interface UserValue {
+interface SchoolValue {
   label: string;
   value: string;
 }
 
-async function fetchUserList(username: string): Promise<UserValue[]> {
-  console.log('fetching user', username);
-  return fetch(`https://660d2bd96ddfa2943b33731c.mockapi.io/api/users/?search=${username}`)
-    .then((res) => res.json())
-    .then((res) => {
-      const results = Array.isArray(res) ? res : [];
-      return results.map((user) => ({
-        label: user.name,
-        value: user.id,
-      }));
-    });
+async function fetchSchoolList(keyword: string): Promise<SchoolValue[]> {
+  if (!keyword) return [];
+  try {
+    const res = await fetch(
+      `http://192.168.140.174:8080/api/school?search=${keyword}`
+    );
+    const json = await res.json();
+    if (json.code !== 200 || !Array.isArray(json.data)) {
+      return [];
+    }
+    return json.data.map((school: any) => ({
+      label: school.Name,
+      value: school.Id,
+    }));
+  } catch (err) {
+    console.error("学校搜索失败:", err);
+    return [];
+  }
 }
 
 const SchoolDebounceSelect: React.FC = () => {
-  const [value, setValue] = useState<UserValue[]>([]);
+  const [value, setValue] = useState<SchoolValue | null>(null);
 
   return (
     <DebounceSelect
-      mode="multiple"
       value={value}
       placeholder="学校"
-      fetchOptions={fetchUserList}
+      fetchOptions={fetchSchoolList}
       onChange={(newValue) => {
-        if (Array.isArray(newValue)) {
-          setValue(newValue);
-        }
+        setValue(newValue as SchoolValue);
       }}
     />
   );
