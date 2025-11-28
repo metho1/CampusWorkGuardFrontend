@@ -10,9 +10,10 @@ const {TabPane} = Tabs;
 const LoginForm: React.FC = () => {
   // 根据 mode 来决定：渲染哪个 Form 表单内容，渲染哪些按钮（忘记密码 / 去注册 / 返回登录）
   const [mode, setMode] = useState<"login" | "forgot" | "register">("login");
-
   // 加载状态
   const [loading, setLoading] = useState(false);
+  // 表单实例
+  const [form] = Form.useForm();
 
   // 提交表单
   const onFinish = async (values: any) => {
@@ -30,8 +31,23 @@ const LoginForm: React.FC = () => {
 
   // 发送验证码
   const sendCode = async () => {
-    message.success("验证码已发送");
-    await sendCodeApi();
+    try {
+      const email = form.getFieldValue("email");
+      if (!email) {
+        message.warning("请先输入邮箱");
+        return;
+      }
+      const role = mode === "register" ? "register" : "login";
+      const res = await sendCodeApi({role, email});
+      if (res.code === 200) {
+        message.success("验证码发送成功");
+      } else {
+        message.error(res.message || "验证码发送失败");
+      }
+    } catch (e) {
+      console.error(e);
+      message.error("发送失败,请稍后重试");
+    }
   };
 
   return (
@@ -42,7 +58,7 @@ const LoginForm: React.FC = () => {
         <TabPane tab="我要招聘" key="employer"/>
       </Tabs>
 
-      <Form onFinish={onFinish} layout="vertical">
+      <Form form={form} onFinish={onFinish} layout="vertical">
         {/* ---------- 登录模式 ---------- */}
         {mode === "login" && (
           <>

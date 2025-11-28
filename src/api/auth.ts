@@ -1,10 +1,26 @@
 // src/api/auth.ts
 import request from "./request";
 
-export const sendCodeApi = () => {
-    return request.get("/auth/send-code");
+// 发送验证码的接口参数
+export interface SendCodeParams {
+    role: "login" | "register";
+    email: string;
+}
+
+// 发送验证码的响应结果
+export interface SendCodeResponse {
+    code: number;
+    message: string;
+    data: null;
+}
+
+// 发送验证码接口
+// POST /auth/send-code
+export const sendCodeApi = (data:SendCodeParams) => {
+    return request.post<SendCodeResponse>("/auth/send_code",data);
 };
 
+// 登录接口
 export const loginApi = (data: { phone: string; code: string }) => {
     return request.post("/auth/login", data);
 };
