@@ -8,6 +8,7 @@ import React, {useMemo, useRef, useState} from 'react';
 import type {SelectProps} from 'antd';
 import {Select, Spin} from 'antd'; // Select：Ant Design 下拉选择框
 import debounce from 'lodash/debounce'; // debounce：lodash 的防抖函数
+import {fetchSchoolApi} from "@/api/school.ts";
 
 export interface DebounceSelectProps<ValueType = any>
   extends Omit<SelectProps<ValueType | ValueType[]>, 'options' | 'children'> { // 继承 Antd SelectProps，但排除 options 和 children 属性
@@ -67,17 +68,14 @@ interface SchoolValue {
   value: string;
 }
 
-async function fetchSchoolList(keyword: string): Promise<SchoolValue[]> {
+async function fetchSchoolList(keyword: string): Promise<{ label: string; value: string | number }[]> {
   if (!keyword) return [];
   try {
-    const res = await fetch(
-      `http://192.168.140.174:8080/api/school?search=${keyword}`
-    );
-    const json = await res.json();
-    if (json.code !== 200 || !Array.isArray(json.data)) {
+    const res = await fetchSchoolApi(keyword);
+    if (res.code !== 200 || !Array.isArray(res.data)) {
       return [];
     }
-    return json.data.map((school: any) => ({
+    return res.data.map((school) => ({
       label: school.Name,
       value: school.Id,
     }));
