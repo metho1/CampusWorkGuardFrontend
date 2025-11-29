@@ -2,8 +2,9 @@
 import React, {useState} from "react";
 import {Button, Checkbox, Form, Input, message, Tabs} from "antd";
 import {EyeInvisibleOutlined, EyeTwoTone, LockOutlined, MailOutlined, UserOutlined} from '@ant-design/icons';
-import {loginApi, sendCodeApi} from "@/api/auth.ts";
+import {loginApi} from "@/api/auth.ts";
 import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
+import SendCodeButton from "@/components/SendCodeButton.tsx";
 
 const {TabPane} = Tabs;
 
@@ -26,27 +27,6 @@ const LoginForm: React.FC = () => {
       message.error("登录失败");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // 发送验证码
-  const sendCode = async () => {
-    try {
-      const email = form.getFieldValue("email");
-      if (!email) {
-        message.warning("请先输入邮箱");
-        return;
-      }
-      const role = mode === "register" ? "register" : "login";
-      const res = await sendCodeApi({role, email});
-      if (res.code === 200) {
-        message.success("验证码发送成功");
-      } else {
-        message.error(res.message || "验证码发送失败");
-      }
-    } catch (e) {
-      console.error(e);
-      message.error("发送失败,请稍后重试");
     }
   };
 
@@ -131,6 +111,7 @@ const LoginForm: React.FC = () => {
         {/* ---------- 忘记密码模式 ---------- */}
         {mode === "forgot" && (
           <>
+            {/* 邮箱 */}
             <Form.Item
               name="email"
               rules={[
@@ -150,15 +131,18 @@ const LoginForm: React.FC = () => {
                 size="large"
                 placeholder="验证码"
                 suffix={
-                  <Button size="small" style={{padding: 0, margin: 0}} type="link" onClick={sendCode}>
-                    发送验证码
-                  </Button>
+                  <SendCodeButton
+                    getEmail={() => form.getFieldValue("email")}
+                    role={mode === "register" ? "register" : "login"}
+                  />
                 }
               />
             </Form.Item>
+            {/* 登录按钮 */}
             <Button type="primary" htmlType="submit" size="large" block>
               邮箱登录
             </Button>
+            {/* 返回密码登录 */}
             <div style={{marginTop: 6}}>
               <Button type="link" onClick={() => setMode("login")} style={{padding: 0}}>
                 密码登录
@@ -190,9 +174,10 @@ const LoginForm: React.FC = () => {
                 size="large"
                 placeholder="验证码"
                 suffix={
-                  <Button size="small" style={{padding: 0, margin: 0}} type="link" onClick={sendCode}>
-                    发送验证码
-                  </Button>
+                  <SendCodeButton
+                    getEmail={() => form.getFieldValue("email")}
+                    role={mode === "register" ? "register" : "login"}
+                  />
                 }
               />
             </Form.Item>
