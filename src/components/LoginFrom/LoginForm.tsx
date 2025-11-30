@@ -1,8 +1,8 @@
 // src/components/LoginForm/LoginForm.tsx
 import React, {useState} from "react";
-import {Button, Checkbox, Form, Input, message, Tabs} from "antd";
+import {Button, Checkbox, Form, Input, message, Spin, Tabs} from "antd";
 import {EyeInvisibleOutlined, EyeTwoTone, LockOutlined, MailOutlined, UserOutlined} from '@ant-design/icons';
-import {emailLoginApi, passwordLoginApi,registerApi} from "@/api/auth.ts";
+import {emailLoginApi, passwordLoginApi, registerApi} from "@/api/auth.ts";
 import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
 import SendCodeButton from "@/components/SendCodeButton.tsx";
 import {useSearchParams} from "react-router-dom";
@@ -35,7 +35,7 @@ const LoginForm: React.FC = () => {
           studentId: values.studentId,
           password: values.password,
         });
-      }else if(mode === "register"){
+      } else if (mode === "register") {
         res = await registerApi({
           school: values.school.label, // 从 Select 取 school 名称
           studentId: values.studentId,
@@ -47,7 +47,7 @@ const LoginForm: React.FC = () => {
 
       // 统一处理响应结果
       if (res.code === 200) {
-        message.success(mode === "register" ? "注册成功" : "登录成功");
+        message.success("登录成功");
         window.location.href = "/home"; // 跳转
         // TODO: 保存 token
       } else {
@@ -68,6 +68,7 @@ const LoginForm: React.FC = () => {
         <TabPane tab="我要找工作" key="jobSeeker"/>
         <TabPane tab="我要招聘" key="employer"/>
       </Tabs>
+
 
       <Form form={form} onFinish={onFinish} layout="vertical">
         {/* ---------- 密码登录模式 ---------- */}
@@ -183,48 +184,50 @@ const LoginForm: React.FC = () => {
         )}
         {/* ---------- 注册模式 ---------- */}
         {mode === "register" && (
-          <>
-            {/* 学校 */}
-            <Form.Item name="school" rules={[{required: true, message: "请选择学校"}]}>
-              <SchoolDebounceSelect/>
-            </Form.Item>
-            {/* 学号 */}
-            <Form.Item name="studentId" rules={[{required: true, message: "请输入学号"}]}>
-              <Input size="large" prefix={<UserOutlined/>} placeholder=" 学号"/>
-            </Form.Item>
-            {/* 邮箱 */}
-            <Form.Item name="email" rules={[
-              {required: true, message: "请输入邮箱"},
-              {type: "email", message: "邮箱格式不正确"},
-            ]}>
-              <Input size="large" prefix={<MailOutlined/>} placeholder=" 邮箱"/>
-            </Form.Item>
-            {/* 邮箱验证码 */}
-            <Form.Item name="code" rules={[{required: true, message: "请输入验证码"}]}>
-              <Input
-                size="large"
-                placeholder="验证码"
-                suffix={
-                  <SendCodeButton
-                    getEmail={() => form.getFieldValue("email")}
-                    role="register"
-                  />
-                }
-              />
-            </Form.Item>
-            {/* 学信网在线验证码 */}
-            <Form.Item name="vCode" rules={[{required: true, message: "请输入学信网在线验证码"}]}>
-              <Input size="large" placeholder="学信网在线验证码"/>
-            </Form.Item>
-            <Button type="primary" htmlType="submit" size="large" block>
-              注册
-            </Button>
-            <div style={{marginTop: 6}}>
-              <Button type="link" onClick={() => setSearchParams({type: "password"})} style={{padding: 0}}>
-                已有账号？返回登录
+          <Spin spinning={loading} tip="正在验证学信网信息..." size="large">
+            <>
+              {/* 学校 */}
+              <Form.Item name="school" rules={[{required: true, message: "请选择学校"}]}>
+                <SchoolDebounceSelect/>
+              </Form.Item>
+              {/* 学号 */}
+              <Form.Item name="studentId" rules={[{required: true, message: "请输入学号"}]}>
+                <Input size="large" prefix={<UserOutlined/>} placeholder=" 学号"/>
+              </Form.Item>
+              {/* 邮箱 */}
+              <Form.Item name="email" rules={[
+                {required: true, message: "请输入邮箱"},
+                {type: "email", message: "邮箱格式不正确"},
+              ]}>
+                <Input size="large" prefix={<MailOutlined/>} placeholder=" 邮箱"/>
+              </Form.Item>
+              {/* 邮箱验证码 */}
+              <Form.Item name="code" rules={[{required: true, message: "请输入验证码"}]}>
+                <Input
+                  size="large"
+                  placeholder="验证码"
+                  suffix={
+                    <SendCodeButton
+                      getEmail={() => form.getFieldValue("email")}
+                      role="register"
+                    />
+                  }
+                />
+              </Form.Item>
+              {/* 学信网在线验证码 */}
+              <Form.Item name="vCode" rules={[{required: true, message: "请输入学信网在线验证码"}]}>
+                <Input size="large" placeholder="学信网在线验证码"/>
+              </Form.Item>
+              <Button type="primary" htmlType="submit" size="large" block loading={loading} disabled={loading}>
+                {loading ? "正在验证中..." : "注册"}
               </Button>
-            </div>
-          </>
+              <div style={{marginTop: 6}}>
+                <Button type="link" onClick={() => setSearchParams({type: "password"})} style={{padding: 0}}>
+                  已有账号？返回登录
+                </Button>
+              </div>
+            </>
+          </Spin>
         )}
       </Form>
     </>
