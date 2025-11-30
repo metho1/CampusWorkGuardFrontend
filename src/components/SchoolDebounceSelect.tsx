@@ -63,11 +63,6 @@ function DebounceSelect<
   );
 }
 
-interface SchoolValue {
-  label: string;
-  value: string;
-}
-
 async function fetchSchoolList(keyword: string): Promise<{ label: string; value: string | number }[]> {
   if (!keyword) return [];
   try {
@@ -85,17 +80,12 @@ async function fetchSchoolList(keyword: string): Promise<{ label: string; value:
   }
 }
 
-const SchoolDebounceSelect: React.FC = () => {
-  const [value, setValue] = useState<SchoolValue | null>(null);
-
+const SchoolDebounceSelect: React.FC = (props) => {
   return (
     <DebounceSelect
-      value={value}
       placeholder="学校"
       fetchOptions={fetchSchoolList}
-      onChange={(newValue) => {
-        setValue(newValue as SchoolValue);
-      }}
+      {...props}
     />
   );
 };

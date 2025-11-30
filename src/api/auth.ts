@@ -20,9 +20,23 @@ export const sendCodeApi = (data:SendCodeParams) => {
     return request.post<SendCodeResponse>("/auth/send_code",data);
 };
 
-// 登录接口
-export const loginApi = (data: { phone: string; code: string }) => {
-    return request.post("/auth/login", data);
+// 密码登录的接口参数
+export interface PasswordLoginParams {
+    schoolId: string | number;
+    studentId: string;
+    password: string;
+}
+
+// 密码登录的响应结果
+export interface PasswordLoginResponse {
+    code: number;
+    message: string;
+    data: null;
+}
+
+// 密码登录接口
+export const passwordLoginApi = (data: PasswordLoginParams) => {
+    return request.post<PasswordLoginResponse>("/auth/student/login", data);
 };
 
 // 邮箱登录的接口参数
