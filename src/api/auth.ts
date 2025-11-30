@@ -56,3 +56,24 @@ export interface EmailLoginResponse {
 export const emailLoginApi = (data: EmailLoginParams) => {
     return request.post<EmailLoginResponse>("/auth/student/email_login", data);
 };
+
+// 注册的接口参数
+export interface RegisterParams {
+    school: string;
+    studentId: string;
+    email: string;
+    code: string;
+    vCode: string;
+}
+
+// 注册的响应结果
+export interface RegisterResponse {
+    code: number;
+    message: string;
+    data: null;
+}
+
+// 注册接口
+export const registerApi = (data: RegisterParams) => {
+    return request.post<RegisterResponse>("/auth/student/register", data);
+};

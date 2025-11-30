@@ -2,7 +2,7 @@
 import React, {useState} from "react";
 import {Button, Checkbox, Form, Input, message, Tabs} from "antd";
 import {EyeInvisibleOutlined, EyeTwoTone, LockOutlined, MailOutlined, UserOutlined} from '@ant-design/icons';
-import {emailLoginApi, passwordLoginApi} from "@/api/auth.ts";
+import {emailLoginApi, passwordLoginApi,registerApi} from "@/api/auth.ts";
 import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
 import SendCodeButton from "@/components/SendCodeButton.tsx";
 import {useSearchParams} from "react-router-dom";
@@ -31,14 +31,23 @@ const LoginForm: React.FC = () => {
         });
       } else if (mode === "password") { // 学校 + 学号 + 密码 登录
         res = await passwordLoginApi({
-          schoolId: values.school.value, // 从 Select 取 Id
+          schoolId: values.school.value, // 从 Select 取 schoolId
           studentId: values.studentId,
           password: values.password,
         });
+      }else if(mode === "register"){
+        res = await registerApi({
+          school: values.school.label, // 从 Select 取 school 名称
+          studentId: values.studentId,
+          email: values.email,
+          code: values.code,
+          vCode: values.vCode,
+        });
       }
 
+      // 统一处理响应结果
       if (res.code === 200) {
-        message.success("登录成功");
+        message.success(mode === "register" ? "注册成功" : "登录成功");
         window.location.href = "/home"; // 跳转
         // TODO: 保存 token
       } else {
