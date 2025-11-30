@@ -2,15 +2,17 @@
 import React, {useState} from "react";
 import {Button, Checkbox, Form, Input, message, Tabs} from "antd";
 import {EyeInvisibleOutlined, EyeTwoTone, LockOutlined, MailOutlined, UserOutlined} from '@ant-design/icons';
-import {loginApi} from "@/api/auth.ts";
+import {loginApi,emailLoginApi} from "@/api/auth.ts";
 import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
 import SendCodeButton from "@/components/SendCodeButton.tsx";
+import {useSearchParams} from "react-router-dom";
 
 const {TabPane} = Tabs;
 
 const LoginForm: React.FC = () => {
-  // 根据 mode 来决定：渲染哪个 Form 表单内容，渲染哪些按钮（忘记密码 / 去注册 / 返回登录）
-  const [mode, setMode] = useState<"login" | "forgot" | "register">("login");
+  // 根据 URl 中 type 参数来决定渲染哪个 Form 表单内容，请求哪个接口（password / email / register）
+  const [searchParams,setSearchParams] = useSearchParams();
+  const mode = searchParams.get("type") || "password"; // 默认密码登录
   // 加载状态
   const [loading, setLoading] = useState(false);
   // 表单实例
@@ -20,11 +22,27 @@ const LoginForm: React.FC = () => {
   const onFinish = async (values: any) => {
     try {
       setLoading(true);
-      const res = await loginApi(values);
-      message.success("登录成功");
-      // TODO: 保存 token、跳转
+      let res;
+
+      if (mode === "email") { // 邮箱 + 验证码 登录
+        res = await emailLoginApi({
+          email: values.email,
+          code: values.code,
+        });
+      }else if (mode === "password") { // 学校 + 学号 + 密码 登录
+        res = await loginApi(values);
+      }
+
+      if (res.code === 200) {
+        message.success("登录成功");
+        window.location.href = "/home"; // 跳转
+        // TODO: 保存 token、跳转
+      } else {
+        message.error(res.message || "登录失败");
+      }
+      return;
     } catch (e) {
-      message.error("登录失败");
+      message.error("登录失败，请稍后重试");
     } finally {
       setLoading(false);
     }
@@ -39,8 +57,8 @@ const LoginForm: React.FC = () => {
       </Tabs>
 
       <Form form={form} onFinish={onFinish} layout="vertical">
-        {/* ---------- 登录模式 ---------- */}
-        {mode === "login" && (
+        {/* ---------- 密码登录模式 ---------- */}
+        {mode === "password" && (
           <>
             {/* 学校 */}
             <Form.Item
@@ -92,10 +110,10 @@ const LoginForm: React.FC = () => {
                 justifyContent: "space-between",
               }}
             >
-              <Button type="link" onClick={() => setMode("forgot")} style={{padding: 0}}>
+              <Button type="link" onClick={() => setSearchParams({type:"email"})} style={{padding: 0}}>
                 邮箱登录
               </Button>
-              <Button type="link" onClick={() => setMode("register")} style={{padding: 0}}>
+              <Button type="link" onClick={() => setSearchParams({type:"register"})} style={{padding: 0}}>
                 没有账号？去注册
               </Button>
             </div>
@@ -108,8 +126,8 @@ const LoginForm: React.FC = () => {
             </div>
           </>
         )}
-        {/* ---------- 忘记密码模式 ---------- */}
-        {mode === "forgot" && (
+        {/* ---------- 邮箱登录模式 ---------- */}
+        {mode === "email" && (
           <>
             {/* 邮箱 */}
             <Form.Item
@@ -133,7 +151,7 @@ const LoginForm: React.FC = () => {
                 suffix={
                   <SendCodeButton
                     getEmail={() => form.getFieldValue("email")}
-                    role={mode === "register" ? "register" : "login"}
+                    role="login"
                   />
                 }
               />
@@ -144,7 +162,7 @@ const LoginForm: React.FC = () => {
             </Button>
             {/* 返回密码登录 */}
             <div style={{marginTop: 6}}>
-              <Button type="link" onClick={() => setMode("login")} style={{padding: 0}}>
+              <Button type="link" onClick={() => setSearchParams({type:"password"})} style={{padding: 0}}>
                 密码登录
               </Button>
             </div>
@@ -176,7 +194,7 @@ const LoginForm: React.FC = () => {
                 suffix={
                   <SendCodeButton
                     getEmail={() => form.getFieldValue("email")}
-                    role={mode === "register" ? "register" : "login"}
+                    role="register"
                   />
                 }
               />
@@ -189,7 +207,7 @@ const LoginForm: React.FC = () => {
               注册
             </Button>
             <div style={{marginTop: 6}}>
-              <Button type="link" onClick={() => setMode("login")} style={{padding: 0}}>
+              <Button type="link" onClick={() => setSearchParams({type:"password"})} style={{padding: 0}}>
                 已有账号？返回登录
               </Button>
             </div>
