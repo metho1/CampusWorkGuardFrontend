@@ -1,7 +1,9 @@
 // src/components/LoginForm/LoginForm.tsx
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Button, Checkbox, Form, Input, message, Spin, Tabs, Upload} from "antd";
 import {
+  ApartmentOutlined,
+  AuditOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
   LockOutlined,
@@ -34,9 +36,12 @@ const LoginForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   // 表单实例
   const [form] = Form.useForm();
-
   // 提交表单
   const onFinish = async (values: any) => {
+    if (!values.agree) {
+      message.warning("请勾选用户协议和隐私政策");
+      return;
+    }
     try {
       setLoading(true);
       let res;
@@ -101,7 +106,10 @@ const LoginForm: React.FC = () => {
       setLoading(false);
     }
   };
-
+  // 切换 mode 时，重置表单
+  useEffect(() => {
+    form.resetFields();
+  }, [mode, activeTab]);
   // 渲染学生端表单
   const renderJobSeekerForm = () => {
     return (
@@ -132,11 +140,6 @@ const LoginForm: React.FC = () => {
               <Button type="link" onClick={() => setSearchParams({type: "register"})} style={{padding: 0}}>
                 没有账号？去注册
               </Button>
-            </div>
-            {/* 用户协议勾选 */}
-            <div style={{marginTop: 16, textAlign: "center"}}>
-              <Checkbox/>
-              <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>我已阅读并同意《用户协议》《隐私政策》</span>
             </div>
           </>
         )}
@@ -191,18 +194,22 @@ const LoginForm: React.FC = () => {
               </Form.Item>
               {/* 学信网在线验证码 */}
               <Form.Item name="vCode" rules={[{required: true, message: "请输入学信网在线验证码"}]}>
-                <Input size="large" placeholder="学信网在线验证码"/>
+                <Input size="large" prefix={<AuditOutlined/>} placeholder=" 学信网在线验证码"/>
               </Form.Item>
               {/*loading={loading} disabled={loading}*/}
               <Button type="primary" htmlType="submit" size="large" block>
                 {/*{loading ? "正在验证中..." : "注册"}*/}
                 注册
               </Button>
-              <div style={{marginTop: 6}}>
-                <Button type="link" onClick={() => setSearchParams({type: "password"})} style={{padding: 0}}>
-                  已有账号？返回登录
-                </Button>
-              </div>
+              {/* 用户协议勾选 */}
+              <Form.Item style={{margin: 6, textAlign: "center"}} name="agree" valuePropName="checked">
+                <Checkbox/>
+                <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>我已阅读并同意《用户协议》《隐私政策》</span>
+              </Form.Item>
+              {/* 返回密码登录 */}
+              <Button type="link" onClick={() => setSearchParams({type: "password"})} style={{padding: 0}}>
+                已有账号？返回登录
+              </Button>
             </>
           </Spin>
         )}
@@ -236,11 +243,6 @@ const LoginForm: React.FC = () => {
               <Button type="link" onClick={() => setSearchParams({type: "employer-register"})} style={{padding: 0}}>
                 没有账号？去注册
               </Button>
-            </div>
-            {/* 用户协议勾选 */}
-            <div style={{marginTop: 16, textAlign: "center"}}>
-              <Checkbox/>
-              <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>我已阅读并同意《用户协议》《隐私政策》</span>
             </div>
           </>
         )}
@@ -277,6 +279,10 @@ const LoginForm: React.FC = () => {
               <Form.Item name="name" rules={[{required: true, message: "请输入姓名"}]}>
                 <Input size="large" prefix={<UserOutlined/>} placeholder=" 姓名"/>
               </Form.Item>
+              {/* 公司名称 */}
+              <Form.Item name="company" rules={[{required: true, message: "请输入公司名称"}]}>
+                <Input size="large" prefix={<ApartmentOutlined/>} placeholder=" 公司"/>
+              </Form.Item>
               {/* 企业邮箱 */}
               <Form.Item name="email" rules={[
                 {required: true, message: "请输入企业邮箱"},
@@ -291,7 +297,7 @@ const LoginForm: React.FC = () => {
               </Form.Item>
               {/* 统一社会信用代码 */}
               <Form.Item name="socialCode" rules={[{required: true, message: "请输入统一社会信用代码"}]}>
-                <Input size="large" placeholder="统一社会信用代码"/>
+                <Input size="large" prefix={<AuditOutlined/>} placeholder=" 统一社会信用代码"/>
               </Form.Item>
               {/* 营业执照 */}
               <Form.Item name="licenseUrl" rules={[{required: true, message: "请上传营业执照"}]}>
@@ -324,11 +330,15 @@ const LoginForm: React.FC = () => {
                 {/*{loading ? "正在验证中..." : "注册"}*/}
                 注册
               </Button>
-              <div style={{marginTop: 6}}>
-                <Button type="link" onClick={() => setSearchParams({type: "employer-password"})} style={{padding: 0}}>
-                  已有账号？返回登录
-                </Button>
-              </div>
+              {/* 用户协议勾选 */}
+              <Form.Item style={{margin: 6, textAlign: "center"}} name="agree" valuePropName="checked">
+                <Checkbox/>
+                <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>我已阅读并同意《用户协议》《隐私政策》</span>
+              </Form.Item>
+              {/* 返回密码登录 */}
+              <Button type="link" onClick={() => setSearchParams({type: "employer-password"})} style={{padding: 0}}>
+                已有账号？返回登录
+              </Button>
             </>
           </Spin>
         )}

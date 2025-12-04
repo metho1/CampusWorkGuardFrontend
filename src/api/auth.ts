@@ -118,6 +118,7 @@ export const employerEmailLoginApi = (data: EmployerEmailLoginParams) => {
 // 企业注册的接口参数
 export interface EmployerRegisterParams {
     name: string;
+    company: string;
     email: string;
     code: string;
     socialCode: string;
