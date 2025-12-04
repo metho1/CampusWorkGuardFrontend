@@ -11,19 +11,13 @@ interface Props {
 
 const LoginLayout: React.FC<Props> = ({children}) => {
   return (
-    <Layout>
+    <Layout className={styles.layoutWrapper}>
       <Header className={styles.header}>
         大学生兼职保障系统
       </Header>
       <Content className={styles.container}>
-        {/* 蒙层 */}
-        {/*<div className={styles.overlay}></div>*/}
-
         {/* 登录框 */}
-        <div className={styles.formWrapper}>
-          {children}
-        </div>
-
+        <div className={styles.formWrapper}>{children}</div>
         {/* 文案位置 */}
         <div className={styles.textArea}>
           <div className={styles.title}>海量优质人才，在线约面</div>
