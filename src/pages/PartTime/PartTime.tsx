@@ -1,9 +1,11 @@
 // src/pages/PartTime/PartTime.tsx
-import React, {useState} from "react";
-import {Button, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag, Upload} from "antd";
+import React, {useEffect, useState} from "react";
+import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag, Upload} from "antd";
+import type {DefaultOptionType} from "antd/es/cascader";
 import {PlusOutlined} from "@ant-design/icons";
 import type {UploadFile} from "antd/es/upload/interface";
 import styles from "./partTime.module.css";
+import {fetchLocationApi} from "@/api/location";
 
 const {TextArea} = Input;
 
@@ -66,6 +68,44 @@ const PartTime: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
+  const [regionOptions, setRegionOptions] = useState<DefaultOptionType[]>([]);
+
+  useEffect(() => {
+    const loadProvinces = async () => {
+      const res = await fetchLocationApi(""); // keywords 为空，返回全国省份
+      if (res.code === 200) {
+        setRegionOptions(
+          res.data.districts.map((p) => ({
+            label: p.name,
+            value: p.adcode,
+            isLeaf: false,
+          }))
+        );
+      }
+    };
+    loadProvinces();
+  }, []);
+
+  const loadRegionData = async (selectedOptions: any[]) => {
+    const target = selectedOptions[selectedOptions.length - 1];
+    target.loading = true;
+
+    const res = await fetchLocationApi(target.label);
+    target.loading = false;
+
+    if (res.code === 200) {
+      target.children = res.data.districts.map((item) => ({
+        label: item.name,
+        value: item.adcode,
+        isLeaf: selectedOptions.length === 2, // 第三层为区 → 叶子
+      }));
+    } else {
+      target.children = [];
+    }
+
+    setRegionOptions([...regionOptions]);
+  };
+
   // 打开/关闭 Modal
   const showModal = () => setOpen(true);
   const hideModal = () => {
@@ -86,7 +126,7 @@ const PartTime: React.FC = () => {
   };
 
   const onFinish = async (values: any) => {
-    // values: { title, type, content, headcount, major, location, shift, salary, salaryUnit, salaryPeriod, ... }
+    // values: { title, type, content, headcount, major, region, address, shift, salary, salaryUnit, salaryPeriod, ... }
     const found = checkForbiddenKeywords(values);
     if (found) {
       message.error(`检测到疑似违规关键词：${found}，请修改后再提交`);
@@ -183,7 +223,6 @@ const PartTime: React.FC = () => {
               <Form.Item name="salary" label="薪资标准" rules={[{required: true, message: "请输入薪资标准"}]}>
                 <Space.Compact style={{width: "100%"}}>
                   <InputNumber style={{width: "70%"}} min={0} placeholder="请输入薪资数额"/>
-                  {/*<Input defaultValue="Xihu District, Hangzhou" />*/}
                   <Select style={{width: "30%"}} defaultValue="元/小时" options={salaryUnits}/>
                 </Space.Compact>
               </Form.Item>
@@ -201,21 +240,43 @@ const PartTime: React.FC = () => {
           </Form.Item>
 
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item name="headcount" label="招聘人数" rules={[{required: true, message: "请输入招聘人数"}]}>
                 <InputNumber placeholder="请输入招聘人数" min={1} style={{width: "100%"}}/>
               </Form.Item>
             </Col>
 
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item name="major" label="专业要求" rules={[{required: true, message: "请选择专业要求"}]}>
                 <Select defaultValue="不限专业" options={majors}/>
               </Form.Item>
             </Col>
+          </Row>
 
-            <Col span={8}>
-              <Form.Item name="location" label="工作地点" rules={[{required: true, message: "请输入工作地点"}]}>
-                <Input placeholder="例如：武汉市洪山区某某街道"/>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="region"
+                label="工作地点（省 / 市 / 区）"
+                rules={[{required: true, message: "请选择省市区"}]}
+              >
+                <Cascader
+                  options={regionOptions}
+                  loadData={loadRegionData}
+                  placeholder="请选择省 / 市 / 区"
+                  style={{width: "100%"}}
+                  changeOnSelect={false}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                name="address"
+                label="详细地址"
+                rules={[{required: true, message: "请输入详细地址"}]}
+              >
+                <Input placeholder="例如 xx街道 xx大厦"/>
               </Form.Item>
             </Col>
           </Row>

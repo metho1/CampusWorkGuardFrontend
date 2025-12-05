@@ -83,6 +83,7 @@ const LoginForm: React.FC = () => {
         } else if (mode === "employer-register") {
           res = await employerRegisterApi({
             name: values.name,
+            company: values.company,
             email: values.email,
             code: values.code,
             socialCode: values.socialCode,
