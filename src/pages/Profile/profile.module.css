@@ -1,0 +1,43 @@
+/*src/pages/Profile/profile.module.css*/
+
+/* 大屏：左右布局 */
+.row {
+  display: flex;
+  gap: 24px;
+}
+
+/* 左侧（基本信息） */
+.left {
+  flex: 1;
+}
+
+/* 右侧（修改密码） */
+.right {
+  flex: 1;
+}
+
+/* 小屏：上下布局 */
+@media (max-width: 1000px) {
+  .row {
+    flex-direction: column;
+  }
+}
+
+.avatarBox {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.name {
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  line-height: 32px;
+}

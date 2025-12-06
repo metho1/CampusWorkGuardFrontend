@@ -1,6 +1,6 @@
 /*src/pages/Home/home.module.css*/
 .layout {
-  height: 100vh;
+  min-height: 100vh;
 }
 
 /*左侧菜单栏*/
@@ -24,7 +24,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .headerRight {
@@ -45,9 +45,6 @@
 
 .content {
   margin: 20px;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  min-height: 85vh;
+  background: #f5f5f5; /* 淡灰背景，不会抢白色卡片的视觉层级 */;
+  min-height: calc(100vh - 64px - 48px); /* 减去顶部栏和外边距的高度 */
 }

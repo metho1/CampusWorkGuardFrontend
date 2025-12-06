@@ -9,7 +9,7 @@ import Salary from "@/pages/Salary/Salary.tsx";
 import Attendance from "@/pages/Attendance/Attendance.tsx";
 import Complaint from "@/pages/Complaint/Complaint.tsx";
 import Statistics from "@/pages/Statistics/Statistics.tsx";
-// import NotFound from "@/pages/NotFound";
+import Profile from "@/pages/Profile/Profile.tsx";
 
 export const routes: RouteObject[] = [
   {
@@ -31,7 +31,7 @@ export const routes: RouteObject[] = [
       {path: "attendance", element: <Attendance/>},
       {path: "complaint", element: <Complaint/>},
       {path: "statistics", element: <Statistics/>},
+      {path: "profile", element: <Profile/>},
     ],
   },
-  // {path: "*", element: <NotFound/>},
 ];

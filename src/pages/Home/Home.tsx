@@ -54,6 +54,14 @@ const MainLayout: React.FC = () => {
   ];
 
   const userMenu = {
+    onClick: ({key}: { key: string }) => {
+      if (key === "logout") {
+        window.location.href = "/login";
+      }
+      if (key === "profile") {
+        navigate("/home/profile");
+      }
+    },
     items: [
       {key: "profile", label: "个人中心"},
       {key: "logout", label: "退出登录"},
