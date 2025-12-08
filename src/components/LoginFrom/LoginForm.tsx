@@ -16,6 +16,7 @@ import {
   employerEmailLoginApi,
   employerPasswordLoginApi,
   employerRegisterApi,
+  type LoginRegisterResponse,
   passwordLoginApi,
   registerApi
 } from "@/api/auth.ts";
@@ -44,7 +45,7 @@ const LoginForm: React.FC = () => {
     }
     try {
       setLoading(true);
-      let res;
+      let res: LoginRegisterResponse;
       // 学生端
       if (activeTab === "jobSeeker") {
         if (mode === "password") { // 学校 + 学号 + 密码 登录
@@ -91,12 +92,14 @@ const LoginForm: React.FC = () => {
           });
         }
       }
-
       // 统一处理响应结果
       if (res.code === 200) {
+        const token = res.data?.token;
+        if (token) {
+          localStorage.setItem("token", token);
+        }
         message.success("登录成功");
         window.location.href = "/home"; // 跳转
-        // TODO: 保存 token
       } else {
         message.error(res.message || "登录失败");
       }
@@ -203,9 +206,13 @@ const LoginForm: React.FC = () => {
                 注册
               </Button>
               {/* 用户协议勾选 */}
-              <Form.Item style={{margin: 6, textAlign: "center"}} name="agree" valuePropName="checked">
-                <Checkbox/>
-                <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>我已阅读并同意《用户协议》《隐私政策》</span>
+              <Form.Item initialValue={false} style={{margin: 6, textAlign: "center"}} name="agree"
+                         valuePropName="checked">
+                <Checkbox><span style={{
+                  marginLeft: 8,
+                  fontSize: 12,
+                  color: "#666"
+                }}>我已阅读并同意《用户协议》《隐私政策》</span></Checkbox>
               </Form.Item>
               {/* 返回密码登录 */}
               <Button type="link" onClick={() => setSearchParams({type: "password"})} style={{padding: 0}}>
@@ -333,8 +340,11 @@ const LoginForm: React.FC = () => {
               </Button>
               {/* 用户协议勾选 */}
               <Form.Item style={{margin: 6, textAlign: "center"}} name="agree" valuePropName="checked">
-                <Checkbox/>
-                <span style={{marginLeft: 8, fontSize: 12, color: "#666"}}>我已阅读并同意《用户协议》《隐私政策》</span>
+                <Checkbox><span style={{
+                  marginLeft: 8,
+                  fontSize: 12,
+                  color: "#666"
+                }}>我已阅读并同意《用户协议》《隐私政策》</span></Checkbox>
               </Form.Item>
               {/* 返回密码登录 */}
               <Button type="link" onClick={() => setSearchParams({type: "employer-password"})} style={{padding: 0}}>

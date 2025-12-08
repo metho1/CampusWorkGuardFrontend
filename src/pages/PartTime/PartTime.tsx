@@ -1,5 +1,5 @@
 // src/pages/PartTime/PartTime.tsx
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag, Upload} from "antd";
 import type {DefaultOptionType} from "antd/es/cascader";
 import {PlusOutlined} from "@ant-design/icons";
@@ -70,21 +70,19 @@ const PartTime: React.FC = () => {
   const [form] = Form.useForm();
   const [regionOptions, setRegionOptions] = useState<DefaultOptionType[]>([]);
 
-  useEffect(() => {
-    const loadProvinces = async () => {
-      const res = await fetchLocationApi(""); // keywords 为空，返回全国省份
-      if (res.code === 200) {
-        setRegionOptions(
-          res.data.districts.map((p) => ({
-            label: p.name,
-            value: p.adcode,
-            isLeaf: false,
-          }))
-        );
-      }
-    };
-    loadProvinces();
-  }, []);
+  // 在 Modal 打开时加载省份数据
+  const loadProvinces = async () => {
+    const res = await fetchLocationApi(""); // keywords 为空，返回全国省份
+    if (res.code === 200) {
+      setRegionOptions(
+        res.data.districts.map((p) => ({
+          label: p.name,
+          value: p.adcode,
+          isLeaf: false,
+        }))
+      );
+    }
+  };
 
   const loadRegionData = async (selectedOptions: any[]) => {
     const target = selectedOptions[selectedOptions.length - 1];
@@ -107,7 +105,10 @@ const PartTime: React.FC = () => {
   };
 
   // 打开/关闭 Modal
-  const showModal = () => setOpen(true);
+  const showModal = async () => {
+    setOpen(true);
+    await loadProvinces(); // 加载省份数据
+  };
   const hideModal = () => {
     setOpen(false);
     form.resetFields();

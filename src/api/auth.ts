@@ -20,6 +20,15 @@ export const sendCodeApi = (data:SendCodeParams) => {
     return request.post<SendCodeResponse>("/auth/send_code",data);
 };
 
+// 学生 和 企业 ：密码登录 / 邮箱登录 / 注册 的响应结果
+export interface LoginRegisterResponse {
+    code: number;
+    message: string;
+    data: {
+        token: string;
+    };
+}
+
 // 学生密码登录的接口参数
 export interface PasswordLoginParams {
     schoolId: string | number;
@@ -27,16 +36,9 @@ export interface PasswordLoginParams {
     password: string;
 }
 
-// 学生密码登录的响应结果
-export interface PasswordLoginResponse {
-    code: number;
-    message: string;
-    data: null;
-}
-
 // 学生密码登录接口
 export const passwordLoginApi = (data: PasswordLoginParams) => {
-    return request.post<PasswordLoginResponse>("/auth/student/login", data);
+    return request.post<LoginRegisterResponse>("/auth/student/login", data);
 };
 
 // 学生邮箱登录的接口参数
@@ -45,16 +47,9 @@ export interface EmailLoginParams {
     code: string;
 }
 
-// 学生邮箱登录的响应结果
-export interface EmailLoginResponse {
-    code: number;
-    message: string;
-    data: null;
-}
-
 // 学生邮箱登录接口
 export const emailLoginApi = (data: EmailLoginParams) => {
-    return request.post<EmailLoginResponse>("/auth/student/email_login", data);
+    return request.post<LoginRegisterResponse>("/auth/student/email_login", data);
 };
 
 // 学生注册的接口参数
@@ -66,16 +61,9 @@ export interface RegisterParams {
     vCode: string;
 }
 
-// 学生注册的响应结果
-export interface RegisterResponse {
-    code: number;
-    message: string;
-    data: null;
-}
-
 // 学生注册接口
 export const registerApi = (data: RegisterParams) => {
-    return request.post<RegisterResponse>("/auth/student/register", data);
+    return request.post<LoginRegisterResponse>("/auth/student/register", data);
 };
 
 
@@ -85,16 +73,9 @@ export interface EmployerPasswordLoginParams {
     password: string;
 }
 
-// 企业密码登录的响应结果
-export interface EmployerPasswordLoginResponse {
-    code: number;
-    message: string;
-    data: null;
-}
-
 // 企业密码登录接口
 export const employerPasswordLoginApi = (data: EmployerPasswordLoginParams) => {
-    return request.post<EmployerPasswordLoginResponse>("/auth/company/login", data);
+    return request.post<LoginRegisterResponse>("/auth/company/login", data);
 };
 
 // 企业邮箱登录的接口参数
@@ -103,16 +84,9 @@ export interface EmployerEmailLoginParams {
     code: string;
 }
 
-// 企业邮箱登录的响应结果
-export interface EmployerEmailLoginResponse {
-    code: number;
-    message: string;
-    data: null;
-}
-
 // 企业邮箱登录接口
 export const employerEmailLoginApi = (data: EmployerEmailLoginParams) => {
-    return request.post<EmployerEmailLoginResponse>("/auth/company/email_login", data);
+    return request.post<LoginRegisterResponse>("/auth/company/email_login", data);
 };
 
 // 企业注册的接口参数
@@ -125,14 +99,7 @@ export interface EmployerRegisterParams {
     licenseUrl: string;
 }
 
-// 企业注册的响应结果
-export interface EmployerRegisterResponse {
-    code: number;
-    message: string;
-    data: null;
-}
-
 // 企业注册接口
 export const employerRegisterApi = (data: EmployerRegisterParams) => {
-    return request.post<EmployerRegisterResponse>("/auth/company/register", data);
+    return request.post<LoginRegisterResponse>("/auth/company/register", data);
 };

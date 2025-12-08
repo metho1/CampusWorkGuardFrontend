@@ -1,6 +1,6 @@
 // src/pages/Home/Home.tsx
-import React, {useState} from "react";
-import {Avatar, Button, Dropdown, Layout, Menu} from "antd";
+import React, {useEffect, useState} from "react";
+import {Avatar, Button, Dropdown, Layout, Menu, message} from "antd";
 import {
   BarChartOutlined,
   ClockCircleOutlined,
@@ -13,13 +13,13 @@ import {
 } from "@ant-design/icons";
 import {Outlet, useNavigate} from "react-router-dom";
 import styles from "./home.module.css";
+import {getUserStaticInfoApi} from "@/api/user";
 
 const {Header, Sider, Content} = Layout;
 
 const MainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-
   const menuItems = [
     {
       key: "/home/part-time",
@@ -52,11 +52,10 @@ const MainLayout: React.FC = () => {
       label: "数据统计分析",
     },
   ];
-
   const userMenu = {
     onClick: ({key}: { key: string }) => {
       if (key === "logout") {
-        window.location.href = "/login";
+        logout();
       }
       if (key === "profile") {
         navigate("/home/profile");
@@ -67,6 +66,28 @@ const MainLayout: React.FC = () => {
       {key: "logout", label: "退出登录"},
     ],
   };
+  // 退出登录
+  const logout = () => {
+    localStorage.removeItem("token");
+    message.success("退出登录成功");
+    window.location.href = "/login";
+  };
+  // 获取用户信息：姓名 + 头像
+  const [user, setUser] = useState<{ name: string; avatar_url: string } | null>(null);
+  useEffect(() => {
+    getUserStaticInfoApi().then(res => {
+      if (res.code === 200) {
+        setUser(res.data);
+      } else {
+        message.error("身份过期，请重新登录");
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
+    }).catch(() => {
+      message.error("请先登录");
+      window.location.href = "/login";
+    });
+  }, []);
 
   return (
     <Layout className={styles.layout}>
@@ -85,7 +106,7 @@ const MainLayout: React.FC = () => {
 
         <Menu
           mode="inline"
-          defaultSelectedKeys={["/home/part-time"]}
+          selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={(item) => navigate(item.key)}
         />
@@ -108,12 +129,12 @@ const MainLayout: React.FC = () => {
           <div className={styles.headerRight}>
             <Dropdown menu={userMenu}>
               <Avatar
-                src="https://i.pravatar.cc/150?img=3"
+                src={user?.avatar_url || "https://i.pravatar.cc/150?img=3"}
                 className={styles.avatar}
               />
             </Dropdown>
 
-            <span className={styles.username}>小米科技有限公司</span>
+            <span className={styles.username}>{user?.name || "小米科技有限公司"}</span>
           </div>
         </Header>
 
