@@ -13,5 +13,5 @@ export interface StaticInfoResponse {
 
 // 获取基本信息接口
 export const getUserStaticInfoApi = () => {
-  return request.post<StaticInfoResponse>("/home/static_info");
+  return request.get<StaticInfoResponse>("/home/static_info");
 };

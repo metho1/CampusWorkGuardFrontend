@@ -14,6 +14,7 @@ import {
 import {Outlet, useNavigate} from "react-router-dom";
 import styles from "./home.module.css";
 import {getUserStaticInfoApi} from "@/api/user";
+import {resolveUrl} from "@/config.ts";
 
 const {Header, Sider, Content} = Layout;
 
@@ -129,7 +130,9 @@ const MainLayout: React.FC = () => {
           <div className={styles.headerRight}>
             <Dropdown menu={userMenu}>
               <Avatar
-                src={user?.avatar_url || "https://i.pravatar.cc/150?img=3"}
+                src={user?.avatar_url
+                  ? resolveUrl(user.avatar_url)
+                  : "https://i.pravatar.cc/150?img=3"}
                 className={styles.avatar}
               />
             </Dropdown>

@@ -25,13 +25,13 @@ export const routes: RouteObject[] = [
     element: <MainLayout/>,
     children: [
       {index: true, element: <Navigate to="/home/part-time"/>},
-      {path: "part-time", element: <PartTime/>},
-      {path: "match", element: <Match/>},
-      {path: "salary", element: <Salary/>},
-      {path: "attendance", element: <Attendance/>},
-      {path: "complaint", element: <Complaint/>},
-      {path: "statistics", element: <Statistics/>},
-      {path: "profile", element: <Profile/>},
+      {path: "part-time", element: <PartTime/>}, //兼职信息管理
+      {path: "match", element: <Match/>}, //智能匹配
+      {path: "salary", element: <Salary/>}, //薪资担保
+      {path: "attendance", element: <Attendance/>}, //考勤与工作记录
+      {path: "complaint", element: <Complaint/>}, //投诉维权
+      {path: "statistics", element: <Statistics/>}, //数据统计分析
+      {path: "profile", element: <Profile/>}, //个人中心
     ],
   },
 ];
