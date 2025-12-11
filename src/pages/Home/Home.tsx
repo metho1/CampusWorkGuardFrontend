@@ -15,6 +15,7 @@ import {Outlet, useNavigate} from "react-router-dom";
 import styles from "./home.module.css";
 import {getUserStaticInfoApi, type StaticInfoResponse} from "@/api/user";
 import {resolveUrl} from "@/config.ts";
+import {deleteEmployerRegisterInfoApi} from "@/api/user.ts";
 
 const {Header, Sider, Content} = Layout;
 
@@ -82,11 +83,11 @@ const MainLayout: React.FC = () => {
       } else {
         message.error("身份过期，请重新登录");
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        navigate("/login");
       }
     }).catch(() => {
       message.error("请先登录");
-      window.location.href = "/login";
+      navigate("/login");
     });
   }, []);
 
@@ -128,6 +129,34 @@ const MainLayout: React.FC = () => {
           />
 
           <div className={styles.headerRight}>
+            {/* ====== 新增：企业认证状态提示 ====== */}
+            {user?.role === "company" && (
+              <div className={styles.verifyStatus}>
+                {user.verify_status === "pending" && (
+                  <span style={{color: "#faad14"}}>系统将在24h内核实您的身份信息</span>)}
+
+                {user.verify_status === "unverified" && (
+                  <span style={{color: "red", cursor: "pointer"}} title={user.fail_info || "点击重新提交认证"}
+                        onClick={async () => {
+                          try {
+                            const res = await deleteEmployerRegisterInfoApi();
+                            if (res.code === 200) {
+                              message.success("请重新提交认证信息");
+                              navigate("/login");
+                            } else {
+                              message.error(res.message || "删除注册信息失败");
+                            }
+                          } catch {
+                            message.error("请求失败，请稍后重试");
+                          }
+                        }}>认证失败（点击重新认证）</span>)}
+
+                {user.verify_status === "verified" && (
+                  <span style={{color: "#52c41a"}}>认证通过</span>)}
+              </div>
+            )}
+
+            {/* 用户头像与名称 */}
             <Dropdown menu={userMenu}>
               <Avatar
                 src={user?.avatar_url
@@ -137,7 +166,7 @@ const MainLayout: React.FC = () => {
               />
             </Dropdown>
 
-            <span className={styles.username}>{user?.name || "小米科技有限公司"}</span>
+            <span className={styles.username}>{user?.name || "xxx"}</span>
           </div>
         </Header>
 

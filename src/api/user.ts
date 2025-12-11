@@ -18,3 +18,8 @@ export interface StaticInfoResponse {
 export const getUserStaticInfoApi = () => {
   return request.get<StaticInfoResponse>("/home/static_info");
 };
+
+// 删除企业用户的注册信息接口
+export const deleteEmployerRegisterInfoApi = () => {
+  return request.get("/company_user/delete");
+}

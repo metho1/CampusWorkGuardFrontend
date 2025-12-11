@@ -22,11 +22,12 @@ import {
 } from "@/api/auth.ts";
 import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
 import SendCodeButton from "@/components/SendCodeButton.tsx";
-import {useSearchParams} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
 
 const {TabPane} = Tabs;
 
 const LoginForm: React.FC = () => {
+  const navigate = useNavigate();
   // 当前 tab：jobSeeker / employer
   const [activeTab, setActiveTab] = useState("jobSeeker");
   // 根据 URl 中 type 参数来决定渲染哪个 Form 表单内容，请求哪个接口
@@ -99,7 +100,7 @@ const LoginForm: React.FC = () => {
           localStorage.setItem("token", token);
         }
         message.success(mode.includes("register") ? "注册成功" : "登录成功");
-        window.location.href = "/home"; // 跳转
+        navigate("/home"); // 跳转
       } else {
         message.error(res.message || "登录失败");
       }
@@ -200,9 +201,7 @@ const LoginForm: React.FC = () => {
               <Form.Item name="vCode" rules={[{required: true, message: "请输入学信网在线验证码"}]}>
                 <Input size="large" prefix={<AuditOutlined/>} placeholder=" 学信网在线验证码"/>
               </Form.Item>
-              {/*loading={loading} disabled={loading}*/}
               <Button type="primary" htmlType="submit" size="large" block>
-                {/*{loading ? "正在验证中..." : "注册"}*/}
                 注册
               </Button>
               {/* 用户协议勾选 */}
@@ -361,7 +360,6 @@ const LoginForm: React.FC = () => {
   return (
     <>
       {/* 顶部 tab */}
-      {/*defaultActiveKey="jobSeeker"*/}
       <Tabs
         activeKey={activeTab}
         onChange={(key) => {
