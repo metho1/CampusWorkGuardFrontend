@@ -3,13 +3,30 @@ import React from "react";
 import {Avatar, Button, Card, Form, Input, message} from "antd";
 import {AuditOutlined, LockOutlined, MailOutlined, UserOutlined,} from "@ant-design/icons";
 import styles from "./profile.module.css";
+import {useNavigate} from "react-router-dom";
+import {changePasswordApi} from "@/api/user.ts";
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   // 修改密码
-  const onChangePassword = (values: any) => {
-    message.success("密码修改成功（示例）");
-    form.resetFields();
+  const onChangePassword = async (values: any) => {
+    const newPassword = values.newPwd;
+    try {
+      const res = await changePasswordApi({password: newPassword});
+      if (res.code === 200) {
+        message.success("密码修改成功，请重新登录");
+        // 清除登录状态
+        localStorage.removeItem("token");
+        // 跳转到登录页
+        navigate("/login");
+      } else {
+        // 展示后端的错误提示（密码复杂度不足等）
+        message.error(res.message || "修改密码失败");
+      }
+    } catch (err) {
+      message.error("服务器连接失败，请稍后再试");
+    }
   };
   /** 校验新密码规则 */
   const validateNewPassword = (_: any, value: string) => {
