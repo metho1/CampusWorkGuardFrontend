@@ -39,7 +39,7 @@ const LoginForm: React.FC = () => {
   const [form] = Form.useForm();
   // 提交表单
   const onFinish = async (values: any) => {
-    if (!values.agree) {
+    if (mode.includes("register") && !values.agree) {
       message.warning("请勾选用户协议和隐私政策");
       return;
     }
@@ -88,7 +88,7 @@ const LoginForm: React.FC = () => {
             email: values.email,
             code: values.code,
             socialCode: values.socialCode,
-            licenseUrl: values.licenseUrl, // 图片地址
+            licenseUrl: values.licenseUrl.url, // 图片地址
           });
         }
       }
@@ -98,7 +98,7 @@ const LoginForm: React.FC = () => {
         if (token) {
           localStorage.setItem("token", token);
         }
-        message.success("登录成功");
+        message.success(mode.includes("register") ? "注册成功" : "登录成功");
         window.location.href = "/home"; // 跳转
       } else {
         message.error(res.message || "登录失败");

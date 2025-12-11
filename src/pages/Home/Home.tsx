@@ -13,7 +13,7 @@ import {
 } from "@ant-design/icons";
 import {Outlet, useNavigate} from "react-router-dom";
 import styles from "./home.module.css";
-import {getUserStaticInfoApi} from "@/api/user";
+import {getUserStaticInfoApi, type StaticInfoResponse} from "@/api/user";
 import {resolveUrl} from "@/config.ts";
 
 const {Header, Sider, Content} = Layout;
@@ -74,7 +74,7 @@ const MainLayout: React.FC = () => {
     window.location.href = "/login";
   };
   // 获取用户信息：姓名 + 头像
-  const [user, setUser] = useState<{ name: string; avatar_url: string } | null>(null);
+  const [user, setUser] = useState<StaticInfoResponse["data"] | null>(null);
   useEffect(() => {
     getUserStaticInfoApi().then(res => {
       if (res.code === 200) {
