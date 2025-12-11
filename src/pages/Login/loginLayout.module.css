@@ -1,0 +1,95 @@
+/* src/pages/Login/loginLayout.module.css */
+
+/* 整个登录页最外层 */
+.layoutWrapper {
+  /* 限制最小宽度 → 不允许内容缩到 1200px 以下 */
+  min-width: 1200px;
+  /* 如果窗口变窄 → 横向滚动整个页面，而不是仅内容区 */
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 顶部栏 */
+.header {
+  color: white;
+  height: 8vh;
+  min-height: 58px;
+  font-size: 24px;
+  background-color: midnightblue;
+}
+
+/* 全屏背景图容器 */
+.container {
+  position: relative;
+  height: 92vh;
+  min-height: 600px;
+
+  /* 背景图全部铺满 */
+  background-image: url("@/assets/images/auth-background.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* 半透明蒙层 */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 登录卡片（浮在右侧） */
+.formWrapper {
+  position: absolute;
+  right: 100px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 450px;
+  padding: 36px 50px;
+
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+
+  /* 柔和过渡 */
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+  z-index: 10;
+}
+
+.formWrapper:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  transform: translateY(calc(-50% - 2px)); /* 轻微上浮 */
+}
+
+/* 左侧文字区（在背景图上） */
+.textArea {
+  position: absolute;
+  left: 100px;
+  top: 40%;
+  transform: translateY(-50%);
+  color: #fff;
+  z-index: 10;
+}
+
+.title {
+  text-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  font-size: 42px;
+  font-weight: bold;
+}
+
+.subTitle {
+  text-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  font-size: 22px;
+  margin-top: 12px;
+  opacity: 0.9;
+}
+
+.footer {
+  height: 58px;
+  text-align: center;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

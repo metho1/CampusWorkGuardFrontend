@@ -1,0 +1,27 @@
+/*src/pages/PartTime/partTime.module.css*/
+/* 顶部按钮区域 */
+.header {
+  margin-bottom: 16px;
+}
+
+/* 列表容器 */
+.listBox {
+  min-height: 360px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+/* 图片上传提示 */
+.uploadTip {
+  color: #888;
+  margin-top: 8px;
+}
+
+/* 底部按钮 */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
