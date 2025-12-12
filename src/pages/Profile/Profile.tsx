@@ -25,10 +25,12 @@ import styles from "./profile.module.css";
 import {useNavigate} from "react-router-dom";
 import {changePasswordApi, getStudentInfoApi, type StudentInfoResponse} from "@/api/user.ts";
 import {resolveUrl} from "@/config.ts";
+import {useUserStore} from "@/stores/userStore.ts";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const updateAvatar = useUserStore(state => state.updateAvatar);
   // 获取学生用户信息
   const [userInfo, setUserInfo] = useState<StudentInfoResponse["data"] | null>(null);
   useEffect(() => {
@@ -86,13 +88,33 @@ const Profile: React.FC = () => {
         <Avatar size={100} src={userInfo?.avatar_url
           ? resolveUrl(userInfo?.avatar_url)
           : "https://i.pravatar.cc/150?img=3"}/>
-        <Upload showUploadList={false}>
-          <Button
-            size="small"
-            shape="circle"
-            icon={<EditOutlined/>}
-            className={styles.avatarEdit}
-          />
+        <Upload name="file" showUploadList={false} action='/api/home/upload_avatar'
+                headers={{
+                  Authorization: `Bearer ${localStorage.getItem("token")}`
+                }}
+                listType="picture" maxCount={1} accept="image/*"
+                onChange={(info) => {
+                  const {status, response} = info.file;
+                  if (status === "uploading") return;
+                  if (status === "done") {
+                    if (response?.code === 200) {
+                      const newUrl = response.data.url; // 后端返回新的头像 URL
+                      // 方式 1：直接更新 userInfo，不刷新页面（推荐）
+                      setUserInfo((prev) =>
+                        prev ? {...prev, avatar_url: newUrl} : prev
+                      );
+                      // 更新 Home 全局 user
+                      updateAvatar(newUrl);
+                      message.success("头像上传成功");
+                    } else {
+                      message.error(response?.message || "上传失败");
+                    }
+                  }
+                  if (status === "error") {
+                    message.error("上传失败，请重试");
+                  }
+                }}>
+          <Button size="small" shape="circle" icon={<EditOutlined/>} className={styles.avatarEdit}/>
         </Upload>
       </div>
       {/* ------------- 个人信息展示（三列） ------------- */}

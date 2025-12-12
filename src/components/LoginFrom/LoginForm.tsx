@@ -308,7 +308,7 @@ const LoginForm: React.FC = () => {
               </Form.Item>
               {/* 营业执照 */}
               <Form.Item name="licenseUrl" rules={[{required: true, message: "请上传营业执照"}]}>
-                <Upload name="file" action='https://10.83.173.178:8080/api/auth/company/upload_license'
+                <Upload name="file" action='/api/auth/company/upload_license'
                         listType="picture" maxCount={1} accept="image/*"
                         onChange={(info) => {
                           const {status, response} = info.file;
@@ -332,9 +332,7 @@ const LoginForm: React.FC = () => {
                   <Button icon={<UploadOutlined/>}>上传营业执照</Button>
                 </Upload>
               </Form.Item>
-              {/*loading={loading} disabled={loading}*/}
               <Button type="primary" htmlType="submit" size="large" block>
-                {/*{loading ? "正在验证中..." : "注册"}*/}
                 注册
               </Button>
               {/* 用户协议勾选 */}
