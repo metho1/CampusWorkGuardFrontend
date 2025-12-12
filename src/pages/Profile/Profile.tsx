@@ -1,38 +1,50 @@
 // src/pages/Profile/Profile.tsx
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {Avatar, Button, Card, Form, Input, message, Upload} from "antd";
-import {AuditOutlined, EditOutlined, LockOutlined, MailOutlined, UserOutlined} from "@ant-design/icons";
+import {
+  ApartmentOutlined,
+  BankOutlined,
+  CalendarOutlined,
+  ClusterOutlined,
+  EditOutlined,
+  FieldTimeOutlined,
+  FlagOutlined,
+  IdcardOutlined,
+  LockOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+  MailOutlined,
+  ManOutlined,
+  ReadOutlined,
+  SafetyCertificateOutlined,
+  SolutionOutlined,
+  UserOutlined,
+  WomanOutlined
+} from "@ant-design/icons";
 import styles from "./profile.module.css";
 import {useNavigate} from "react-router-dom";
-import {changePasswordApi} from "@/api/user.ts";
+import {changePasswordApi, getStudentInfoApi, type StudentInfoResponse} from "@/api/user.ts";
 import {resolveUrl} from "@/config.ts";
-
-// 假设后端返回的学生信息，你在实际项目中从接口获取
-const mockStudentInfo = {
-  avatar_url: "https://i.pravatar.cc/150?img=3",
-  student_id: "2023001234",
-  email: "student@example.com",
-};
-
-const mockChsiInfo = {
-  name: "王林茜",
-  gender: "女",
-  birthday: "2003-08-19",
-  nation: "汉族",
-  school: "华南理工大学",
-  level: "本科",
-  major: "软件工程",
-  duration: "4年",
-  college: "计算机学院",
-  department: "软件工程系",
-  entrance_date: "2021-09-01",
-  status: "在籍",
-  expected_grad: "2025-06-30",
-};
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  // 获取学生用户信息
+  const [userInfo, setUserInfo] = useState<StudentInfoResponse["data"] | null>(null);
+  useEffect(() => {
+    getStudentInfoApi().then(res => {
+      if (res.code === 200) {
+        setUserInfo(res.data);
+      } else {
+        message.error("身份过期，请重新登录");
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    }).catch(() => {
+      message.error("请先登录");
+      navigate("/login");
+    });
+  }, []);
   // 修改密码
   const onChangePassword = async (values: any) => {
     const newPassword = values.newPwd;
@@ -71,12 +83,12 @@ const Profile: React.FC = () => {
     <Card className={styles.cardWrapper}>
       {/* --------------- 头像区域 --------------- */}
       <div className={styles.avatarWrapper}>
-        <Avatar size={100} src={mockStudentInfo?.avatar_url
-          ? resolveUrl(mockStudentInfo.avatar_url)
+        <Avatar size={100} src={userInfo?.avatar_url
+          ? resolveUrl(userInfo?.avatar_url)
           : "https://i.pravatar.cc/150?img=3"}/>
         <Upload showUploadList={false}>
           <Button
-            size="middle"
+            size="small"
             shape="circle"
             icon={<EditOutlined/>}
             className={styles.avatarEdit}
@@ -86,25 +98,27 @@ const Profile: React.FC = () => {
       {/* ------------- 个人信息展示（三列） ------------- */}
       <div className={styles.sectionTitle}>个人信息</div>
       <div className={styles.threeCols}>
-        <p><UserOutlined/> 姓名：{mockChsiInfo.name}</p>
-        <p><MailOutlined/> 性别：{mockChsiInfo.gender}</p>
-        <p><AuditOutlined/> 出生日期：{mockChsiInfo.birthday}</p>
+        <p><UserOutlined/> 姓名：{userInfo?.name}</p>
+        <p>
+          {userInfo?.gender === "男" ? <ManOutlined/> : <WomanOutlined/>} 性别：{userInfo?.gender}
+        </p>
+        <p><CalendarOutlined/> 出生日期：{userInfo?.birthday}</p>
 
-        <p><UserOutlined/> 民族：{mockChsiInfo.nation}</p>
-        <p><MailOutlined/> 学号：{mockStudentInfo.student_id}</p>
-        <p><AuditOutlined/> 邮箱：{mockStudentInfo.email}</p>
+        <p><FlagOutlined/> 民族：{userInfo?.nation}</p>
+        <p><IdcardOutlined/> 学号：{userInfo?.student_id}</p>
+        <p><MailOutlined/> 邮箱：{userInfo?.email}</p>
 
-        <p><UserOutlined/> 学校：{mockChsiInfo.school}</p>
-        <p><MailOutlined/> 专业：{mockChsiInfo.major}</p>
-        <p><AuditOutlined/> 层次：{mockChsiInfo.level}</p>
+        <p><BankOutlined/> 学校：{userInfo?.school}</p>
+        <p><ReadOutlined/> 专业：{userInfo?.major}</p>
+        <p><SolutionOutlined/> 层次：{userInfo?.level}</p>
 
-        <p><UserOutlined/> 学制：{mockChsiInfo.duration}</p>
-        <p><MailOutlined/> 学院：{mockChsiInfo.college}</p>
-        <p><AuditOutlined/> 系所：{mockChsiInfo.department}</p>
+        <p><FieldTimeOutlined/> 学制：{userInfo?.duration}</p>
+        <p><ApartmentOutlined/> 学院：{userInfo?.college}</p>
+        <p><ClusterOutlined/> 系所：{userInfo?.department}</p>
 
-        <p><UserOutlined/> 入学日期：{mockChsiInfo.entrance_date}</p>
-        <p><MailOutlined/> 预计毕业日期：{mockChsiInfo.expected_grad}</p>
-        <p><AuditOutlined/> 学籍状态：{mockChsiInfo.status}</p>
+        <p><LoginOutlined/> 入学日期：{userInfo?.entrance_date}</p>
+        <p><LogoutOutlined/> 预计毕业日期：{userInfo?.expected_grad}</p>
+        <p><SafetyCertificateOutlined/> 学籍状态：{userInfo?.status}</p>
       </div>
       {/* ------------------ 修改密码 ------------------ */}
       <div className={styles.sectionTitle}>修改密码</div>

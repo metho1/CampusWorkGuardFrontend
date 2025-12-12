@@ -70,9 +70,9 @@ const MainLayout: React.FC = () => {
   };
   // 退出登录
   const logout = () => {
-    localStorage.removeItem("token");
     message.success("退出登录成功");
-    window.location.href = "/login";
+    localStorage.removeItem("token");
+    navigate("/login");
   };
   // 获取用户信息：姓名 + 头像
   const [user, setUser] = useState<StaticInfoResponse["data"] | null>(null);

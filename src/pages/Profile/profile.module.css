@@ -15,9 +15,9 @@
 
 .avatarEdit {
   position: absolute;
-  right: calc(50% - 70px);
+  right: calc(50% - 50px);
   bottom: 0;
-  transform: translateY(10%);
+  transform: translateX(50%);
 }
 
 .sectionTitle {
