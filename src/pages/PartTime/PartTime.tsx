@@ -8,6 +8,7 @@ import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
+import {createJobApi} from "@/api/job";
 
 const {TextArea} = Input;
 
@@ -45,7 +46,7 @@ const workShifts = [
 // 经验要求单选: 无经验、1年以内、1-3年、3年以上
 const experiences = [
   {label: "无经验", value: "none"},
-  {label: "1年以内", value: "1"},
+  {label: "1年以内", value: "<1"},
   {label: "1-3年", value: "1-3"},
   {label: "3年以上", value: ">3"},
 ];
@@ -123,12 +124,14 @@ const PartTime: React.FC = () => {
 
   // 前端关键词检测
   const checkForbiddenKeywords = (values: any) => {
-    const combinedText = `${values.title ?? ""} ${values.content ?? ""}`.toLowerCase();
+    const combinedText = `${values.name ?? ""} ${values.content ?? ""}`.toLowerCase();
     return forbiddenKeywords.find((kw) => combinedText.includes(kw.toLowerCase()));
   };
 
   const onFinish = async (values: any) => {
-    // values: { title, type, content, headcount, major, region, address, shift, salary, salaryUnit, salaryPeriod, ... }
+    // values: { name, type, content, headcount, major, region, address, shift, salary, salaryUnit, salaryPeriod, ... }
+
+    // 违规关键词校验
     const found = checkForbiddenKeywords(values);
     if (found) {
       message.error(`检测到疑似违规关键词：${found}，请修改后再提交`);
@@ -141,22 +144,41 @@ const PartTime: React.FC = () => {
       return;
     }
 
+    // 处理省 / 市 / 区（Cascader 返回的是数组)
+    // 如： ["420000", "420100", "420111"]  转成 "420000,420100,420111"
+    const regionText = values.region.toString();
+
     // 组装图片（这里只返回本地 base64 或服务器 URL）
     // TODO: 如果需要上传到服务器，请在这里实现上传逻辑并替换图片 URL 列表
     // const images = (fileList || []).map((f) => f.url || f.thumbUrl || f.name);
 
-    // 模拟提交
+    const params = {
+      name: values.name,
+      type: values.type,
+      salary: Number(values.salary),
+      salaryUnit: values.salaryUnit,       // hour / day / month
+      salaryPeriod: values.salaryPeriod,   // day / week / month
+      content: values.content,
+      headcount: values.headcount,
+      major: values.major,
+      region: regionText,
+      address: values.address,
+      shift: values.shift,
+      experience: values.experience,
+    };
+
+    // 提交表单
     try {
       setSubmitting(true);
-      // TODO: 调用后端 API，示例：
-      // await api.createJob({ ...values, images });
-      await new Promise((res) => setTimeout(res, 1200)); // simulate latency
-
-      message.success("岗位发布提交成功（后台将在 24 小时内审核）");
-      hideModal();
+      const res = await createJobApi(params);
+      if (res.code === 200) {
+        message.success("岗位发布提交成功（后台将在 24 小时内审核）");
+        hideModal();
+      } else {
+        message.error(res.message || "发布失败");
+      }
     } catch (err) {
-      console.error(err);
-      message.error("提交失败，请重试");
+      message.error("提交失败，请稍后重试");
     } finally {
       setSubmitting(false);
     }
@@ -198,12 +220,16 @@ const PartTime: React.FC = () => {
             },
           },
           {
-            title: "薪资", dataIndex: "salary", render: (_: any, row: any) =>
-              row.salary
-                ? `${row.salary} ${row.salaryUnit}`
-                : "-",
+            title: "薪资", dataIndex: "salary", render: (_: any, row: any) => {
+              const map: Record<string, string> = {
+                "hour": "元/小时",
+                "day": "元/天",
+                "month": "元/月",
+              };
+              return `${row.salary} ${map[row.salaryUnit] || ""}`;
+            },
           },
-          {title: "发布时间", dataIndex: "createdAt"},
+          {title: "创建时间", dataIndex: "createdAt"},
           {
             title: "状态",
             dataIndex: "status",
@@ -233,11 +259,11 @@ const PartTime: React.FC = () => {
         ]}
         dataSource={[
           {
-            id: 1,
+            id: 4,
             name: "校园超市理货员",
             type: "part-time",
             salary: 18,
-            salaryUnit: "元/小时",
+            salaryUnit: "hour",
             status: "pending",
             createdAt: "2025-03-12",
           },
@@ -246,7 +272,7 @@ const PartTime: React.FC = () => {
             name: "UI 设计实习生",
             type: "intern",
             salary: 150,
-            salaryUnit: "元/天",
+            salaryUnit: "day",
             status: "approved",
             createdAt: "2025-03-10",
           },
@@ -255,7 +281,7 @@ const PartTime: React.FC = () => {
             name: "线上问卷整理",
             type: "part-time",
             salary: 300,
-            salaryUnit: "元/天",
+            salaryUnit: "day",
             status: "rejected",
             createdAt: "2025-03-08",
           },
@@ -282,7 +308,7 @@ const PartTime: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="title" label="岗位名称" rules={[{required: true, message: "请输入岗位名称"}]}>
+              <Form.Item name="name" label="岗位名称" rules={[{required: true, message: "请输入岗位名称"}]}>
                 <Input placeholder="请输入清晰的岗位名称" maxLength={80}/>
               </Form.Item>
             </Col>
@@ -299,7 +325,12 @@ const PartTime: React.FC = () => {
               <Form.Item name="salary" label="薪资标准" rules={[{required: true, message: "请输入薪资标准"}]}>
                 <Space.Compact style={{width: "100%"}}>
                   <InputNumber style={{width: "70%"}} min={0} placeholder="请输入薪资数额"/>
-                  <Select style={{width: "30%"}} defaultValue="元/小时" options={salaryUnits}/>
+                  <Form.Item name="salaryUnit" noStyle initialValue="hour">
+                    <Select
+                      style={{width: "30%"}}
+                      options={salaryUnits}
+                    />
+                  </Form.Item>
                 </Space.Compact>
               </Form.Item>
             </Col>
@@ -365,13 +396,13 @@ const PartTime: React.FC = () => {
             </Col>
 
             <Col span={12}>
-              <Form.Item name="experience" label="经验要求">
+              <Form.Item name="experience" label="经验要求" rules={[{required: true, message: "请选择经验要求"}]}>
                 <Select placeholder="请选择经验要求" options={experiences}/>
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item name="" label="岗位相关图片（最多 6 张）">
+          <Form.Item name="pictureList" label="岗位相关图片（最多 6 张）">
             <Upload
               listType="picture-card"
               fileList={fileList}
