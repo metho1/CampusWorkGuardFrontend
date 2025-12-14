@@ -18,40 +18,59 @@ import {
   ReadOutlined,
   SafetyCertificateOutlined,
   SolutionOutlined,
+  TeamOutlined,
   UserOutlined,
   WomanOutlined
 } from "@ant-design/icons";
 import styles from "./profile.module.css";
 import {useNavigate} from "react-router-dom";
-import {changePasswordApi, getStudentInfoApi, type StudentInfoResponse} from "@/api/user.ts";
+import {
+  companyChangePasswordApi,
+  type CompanyInfoResponse,
+  getCompanyInfoApi,
+  getStudentInfoApi,
+  studentChangePasswordApi,
+  type StudentInfoResponse
+} from "@/api/user.ts";
 import {resolveUrl} from "@/config.ts";
 import {useUserStore} from "@/stores/userStore.ts";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const {user} = useUserStore();
+  const role = user?.role; // "student" 或 "company"
   const updateAvatar = useUserStore(state => state.updateAvatar);
-  // 获取学生用户信息
-  const [userInfo, setUserInfo] = useState<StudentInfoResponse["data"] | null>(null);
+  const [StudentInfo, setStudentInfo] = useState<StudentInfoResponse["data"] | null>(null);
+  const [CompanyInfo, setCompanyInfo] = useState<CompanyInfoResponse["data"] | null>(null);
+  // 获取用户信息
   useEffect(() => {
-    getStudentInfoApi().then(res => {
-      if (res.code === 200) {
-        setUserInfo(res.data);
-      } else {
+    if (!role) return;
+    const fetchProfile = async () => {
+      try {
+        if (role === "student") {
+          const res = await getStudentInfoApi();
+          if (res.code === 200) setStudentInfo(res.data);
+          else throw new Error();
+        } else {
+          const res = await getCompanyInfoApi();
+          if (res.code === 200) setCompanyInfo(res.data);
+          else throw new Error();
+        }
+      } catch {
         message.error("身份过期，请重新登录");
         localStorage.removeItem("token");
         navigate("/login");
       }
-    }).catch(() => {
-      message.error("请先登录");
-      navigate("/login");
-    });
-  }, []);
+    };
+    fetchProfile();
+  }, [role]);
   // 修改密码
   const onChangePassword = async (values: any) => {
-    const newPassword = values.newPwd;
     try {
-      const res = await changePasswordApi({password: newPassword});
+      const api =
+        role === "student" ? studentChangePasswordApi : companyChangePasswordApi;
+      const res = await api({password: values.newPwd});
       if (res.code === 200) {
         message.success("密码修改成功，请重新登录");
         // 清除登录状态
@@ -81,12 +100,14 @@ const Profile: React.FC = () => {
     return Promise.resolve();
   };
 
+  const avatarUrl = role === "student" ? StudentInfo?.avatar_url : CompanyInfo?.avatar_url;
+
   return (
     <Card className={styles.cardWrapper}>
       {/* --------------- 头像区域 --------------- */}
       <div className={styles.avatarWrapper}>
-        <Avatar size={100} src={userInfo?.avatar_url
-          ? resolveUrl(userInfo?.avatar_url)
+        <Avatar size={100} src={avatarUrl
+          ? resolveUrl(avatarUrl)
           : "https://i.pravatar.cc/150?img=3"}/>
         <Upload name="file" showUploadList={false} action='/api/home/upload_avatar'
                 headers={{
@@ -99,10 +120,16 @@ const Profile: React.FC = () => {
                   if (status === "done") {
                     if (response?.code === 200) {
                       const newUrl = response.data.url; // 后端返回新的头像 URL
-                      // 方式 1：直接更新 userInfo，不刷新页面（推荐）
-                      setUserInfo((prev) =>
-                        prev ? {...prev, avatar_url: newUrl} : prev
-                      );
+                      // 直接更新 userInfo，不刷新页面
+                      if (role === "student") {
+                        setStudentInfo((prev) =>
+                          prev ? {...prev, avatar_url: newUrl} : prev
+                        );
+                      } else if (role === "company") {
+                        setCompanyInfo((prev) =>
+                          prev ? {...prev, avatar_url: newUrl} : prev
+                        );
+                      }
                       // 更新 Home 全局 user
                       updateAvatar(newUrl);
                       message.success("头像上传成功");
@@ -119,29 +146,48 @@ const Profile: React.FC = () => {
       </div>
       {/* ------------- 个人信息展示（三列） ------------- */}
       <div className={styles.sectionTitle}>个人信息</div>
-      <div className={styles.threeCols}>
-        <p><UserOutlined/> 姓名：{userInfo?.name}</p>
-        <p>
-          {userInfo?.gender === "男" ? <ManOutlined/> : <WomanOutlined/>} 性别：{userInfo?.gender}
-        </p>
-        <p><CalendarOutlined/> 出生日期：{userInfo?.birthday}</p>
+      {/*学生信息*/}
+      {role === "student" && (
+        <div className={styles.threeCols}>
+          <p><UserOutlined/> 姓名：{StudentInfo?.name}</p>
+          <p>
+            {StudentInfo?.gender === "男" ? <ManOutlined/> : <WomanOutlined/>} 性别：{StudentInfo?.gender}
+          </p>
+          <p><CalendarOutlined/> 出生日期：{StudentInfo?.birthday}</p>
 
-        <p><FlagOutlined/> 民族：{userInfo?.nation}</p>
-        <p><IdcardOutlined/> 学号：{userInfo?.student_id}</p>
-        <p><MailOutlined/> 邮箱：{userInfo?.email}</p>
+          <p><FlagOutlined/> 民族：{StudentInfo?.nation}</p>
+          <p><IdcardOutlined/> 学号：{StudentInfo?.student_id}</p>
+          <p><MailOutlined/> 邮箱：{StudentInfo?.email}</p>
 
-        <p><BankOutlined/> 学校：{userInfo?.school}</p>
-        <p><ReadOutlined/> 专业：{userInfo?.major}</p>
-        <p><SolutionOutlined/> 层次：{userInfo?.level}</p>
+          <p><BankOutlined/> 学校：{StudentInfo?.school}</p>
+          <p><ReadOutlined/> 专业：{StudentInfo?.major}</p>
+          <p><SolutionOutlined/> 层次：{StudentInfo?.level}</p>
 
-        <p><FieldTimeOutlined/> 学制：{userInfo?.duration}</p>
-        <p><ApartmentOutlined/> 学院：{userInfo?.college}</p>
-        <p><ClusterOutlined/> 系所：{userInfo?.department}</p>
+          <p><FieldTimeOutlined/> 学制：{StudentInfo?.duration}</p>
+          <p><ApartmentOutlined/> 学院：{StudentInfo?.college}</p>
+          <p><ClusterOutlined/> 系所：{StudentInfo?.department}</p>
 
-        <p><LoginOutlined/> 入学日期：{userInfo?.entrance_date}</p>
-        <p><LogoutOutlined/> 预计毕业日期：{userInfo?.expected_grad}</p>
-        <p><SafetyCertificateOutlined/> 学籍状态：{userInfo?.status}</p>
-      </div>
+          <p><LoginOutlined/> 入学日期：{StudentInfo?.entrance_date}</p>
+          <p><LogoutOutlined/> 预计毕业日期：{StudentInfo?.expected_grad}</p>
+          <p><SafetyCertificateOutlined/> 学籍状态：{StudentInfo?.status}</p>
+        </div>
+      )}
+      {/*企业信息*/}
+      {role === "company" && (
+        <div className={styles.threeCols}>
+          <p><TeamOutlined/> 企业名称：{CompanyInfo?.company}</p>
+          <p><UserOutlined/> 联系人：{CompanyInfo?.name}</p>
+          <p><MailOutlined/> 企业邮箱：{CompanyInfo?.email}</p>
+
+          {/*<p><BankOutlined/> 所属行业：{userInfo?.industry}</p>*/}
+          {/*<p><ApartmentOutlined/> 公司规模：{userInfo?.size}</p>*/}
+          {/*<p><ClusterOutlined/> 公司类型：{userInfo?.type}</p>*/}
+
+          {/*<p><FieldTimeOutlined/> 成立日期：{userInfo?.established_date}</p>*/}
+          {/*<p><SolutionOutlined/> 注册资本：{userInfo?.registered_capital}</p>*/}
+          {/*<p><SafetyCertificateOutlined/> 经营状态：{userInfo?.operation_status}</p>*/}
+        </div>
+      )}
       {/* ------------------ 修改密码 ------------------ */}
       <div className={styles.sectionTitle}>修改密码</div>
       <Form form={form} layout="vertical" onFinish={onChangePassword}>

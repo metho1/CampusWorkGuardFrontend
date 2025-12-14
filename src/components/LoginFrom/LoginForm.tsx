@@ -72,9 +72,9 @@ const LoginForm: React.FC = () => {
       }
       // 企业端
       if (activeTab === "employer") {
-        if (mode === "employer-password") { // 姓名 + 密码 登录
+        if (mode === "employer-password") { // 邮箱 + 密码 登录
           res = await employerPasswordLoginApi({
-            name: values.name,
+            email: values.email,
             password: values.password,
           });
         } else if (mode === "employer-email") { // 邮箱 + 验证码 登录
@@ -231,9 +231,12 @@ const LoginForm: React.FC = () => {
         {/* ---------- 密码登录模式 ---------- */}
         {mode === "employer-password" && (
           <>
-            {/* 姓名 */}
-            <Form.Item name="name" rules={[{required: true, message: "请选择姓名"}]}>
-              <Input size="large" prefix={<UserOutlined/>} placeholder=" 姓名"/>
+            {/* 邮箱 */}
+            <Form.Item name="email" rules={[
+              {required: true, message: "请输入邮箱"},
+              {type: "email", message: "邮箱格式不正确"},
+            ]}>
+              <Input size="large" prefix={<MailOutlined/>} placeholder=" 企业邮箱"/>
             </Form.Item>
             {/* 密码 */}
             <Form.Item name="password" rules={[{required: true, message: "请输入密码"}]}>
@@ -245,7 +248,7 @@ const LoginForm: React.FC = () => {
             {/* 表单底部操作 */}
             <div style={{marginTop: 6, display: "flex", justifyContent: "space-between"}}>
               <Button type="link" onClick={() => setSearchParams({type: "employer-email"})} style={{padding: 0}}>
-                邮箱登录
+                验证码登录
               </Button>
               <Button type="link" onClick={() => setSearchParams({type: "employer-register"})} style={{padding: 0}}>
                 没有账号？去注册
