@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import StatCards from "@/components/StatCards/StatCards.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
 import {Button, Space, Tag} from "antd";
-import React, {useState} from "react";
+import React from "react";
 import {PlusOutlined} from "@ant-design/icons";
 
 const cardList = [
@@ -18,7 +18,6 @@ const cardMap = Object.fromEntries(
 );
 
 const Complaint: React.FC = () => {
-  const [tabKey, setTabKey] = useState("my");
 
   return (
     <>
@@ -54,14 +53,6 @@ const Complaint: React.FC = () => {
       />
 
       <SectionCard
-        tabs={[
-          {key: "my", label: "我的投诉"},
-          {key: "guide", label: "维权指南"},
-          {key: "process", label: "处理流程"},
-          {key: "stat", label: "投诉统计"}
-        ]}
-        activeKey={tabKey}
-        onTabChange={setTabKey}
         searchPlaceholder="搜索投诉内容"
         columns={[
           {title: "投诉标题", dataIndex: "title"},
@@ -71,7 +62,17 @@ const Complaint: React.FC = () => {
           {
             title: "状态",
             dataIndex: "status",
-            render: (v: string) => <Tag color="orange">{v}</Tag>
+            render: (v: string) => {
+              const colorMap: Record<string, string> = {
+                pending: "orange",
+                approved: "green",
+              };
+              const textMap: Record<string, string> = {
+                pending: "处理中",
+                approved: "已解决",
+              };
+              return <Tag color={colorMap[v]}>{textMap[v]}</Tag>;
+            },
           },
           {
             title: "操作",
@@ -90,7 +91,7 @@ const Complaint: React.FC = () => {
             company: "科技创新有限公司",
             type: "薪资纠纷",
             date: "2024-05-10",
-            status: "处理中"
+            status: "pending"
           },
           {
             id: 2,
@@ -98,7 +99,7 @@ const Complaint: React.FC = () => {
             company: "建筑发展集团",
             type: "安全问题",
             date: "2024-04-22",
-            status: "已解决"
+            status: "approved"
           },
           {
             id: 3,
@@ -106,7 +107,7 @@ const Complaint: React.FC = () => {
             company: "市场营销公司",
             type: "合同纠纷",
             date: "2024-03-15",
-            status: "处理中"
+            status: "pending"
           },
           {
             id: 4,
@@ -114,7 +115,7 @@ const Complaint: React.FC = () => {
             company: "零售服务企业",
             type: "劳动争议",
             date: "2024-02-28",
-            status: "已解决"
+            status: "approved"
           },
           {
             id: 5,
@@ -122,7 +123,7 @@ const Complaint: React.FC = () => {
             company: "软件开发公司",
             type: "薪资纠纷",
             date: "2024-01-30",
-            status: "处理中"
+            status: "pending"
           },
           {
             id: 6,
@@ -130,7 +131,7 @@ const Complaint: React.FC = () => {
             company: "餐饮连锁企业",
             type: "工作环境",
             date: "2024-01-10",
-            status: "已解决"
+            status: "approved"
           }
         ]}
       />

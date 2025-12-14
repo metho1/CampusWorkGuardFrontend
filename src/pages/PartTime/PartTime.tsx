@@ -6,33 +6,28 @@ import {PlusOutlined} from "@ant-design/icons";
 import type {UploadFile} from "antd/es/upload/interface";
 import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
+import PageHeader from "@/components/PageHeader/PageHeader.tsx";
+import SectionCard from "@/components/SectionCard/SectionCard.tsx";
 
 const {TextArea} = Input;
 
-// 岗位类型单选: 兼职/临时、实习、全职（兼岗）
+// 岗位类型单选: 兼职、实习、全职（兼岗）
 const jobTypes = [
-  {label: "兼职/临时", value: "part-time"},
+  {label: "兼职", value: "part-time"},
   {label: "实习", value: "intern"},
   {label: "全职", value: "full-time"},
 ];
 // 薪资单位单选: 元/小时、元/天、元/月
 const salaryUnits = [
-  {label: "元/小时", value: "yuan/hour"},
-  {label: "元/天", value: "yuan/day"},
-  {label: "元/月", value: "yuan/month"},
+  {label: "元/小时", value: "hour"},
+  {label: "元/天", value: "day"},
+  {label: "元/月", value: "month"},
 ];
-// 薪资发放周期单选: 按小时、按天、按周、按月
+// 薪资发放周期单选: 按天、按周、按月
 const salaryPeriods = [
-  {label: "按小时", value: "hour"},
   {label: "按天", value: "day"},
   {label: "按周", value: "week"},
   {label: "按月", value: "month"},
-];
-// 工作时段单选: 白班、夜班、轮班
-const workShifts = [
-  {label: "白班", value: "day"},
-  {label: "夜班", value: "night"},
-  {label: "轮班", value: "shift"},
 ];
 // 专业要求多选: 不限专业、计算机类、设计类、金融类
 const majors = [
@@ -40,6 +35,12 @@ const majors = [
   {label: "计算机类", value: "cs"},
   {label: "设计类", value: "design"},
   {label: "金融类", value: "finance"},
+];
+// 工作时段单选: 白班、夜班、轮班
+const workShifts = [
+  {label: "白班", value: "day"},
+  {label: "夜班", value: "night"},
+  {label: "轮班", value: "shift"},
 ];
 // 经验要求单选: 无经验、1年以内、1-3年、3年以上
 const experiences = [
@@ -176,16 +177,90 @@ const PartTime: React.FC = () => {
 
   return (
     <>
-      <div className={styles.header}>
-        <Button type="primary" onClick={showModal}>
-          发布新岗位
-        </Button>
-      </div>
+      <PageHeader
+        title="兼职信息管理"
+        desc="支持企业发布岗位，系统自动校验违规信息，管理员将在 24 小时内完成审核"
+        extra={<Button type="primary" icon={<PlusOutlined/>} onClick={showModal}>发布新岗位</Button>}
+      />
 
-      {/* TODO: 在这里放置岗位列表、筛选、审核等 UI（后续实现） */}
-      <div className={styles.listBox}>
-        兼职岗位列表（后续实现）
-      </div>
+      <SectionCard
+        searchPlaceholder="搜索岗位名称"
+        columns={[
+          {title: "岗位名称", dataIndex: "name"},
+          {
+            title: "岗位类型", dataIndex: "type", render: (v: string) => {
+              const map: Record<string, string> = {
+                "part-time": "兼职",
+                "intern": "实习",
+                "full-time": "全职",
+              };
+              return map[v] || "-";
+            },
+          },
+          {
+            title: "薪资", dataIndex: "salary", render: (_: any, row: any) =>
+              row.salary
+                ? `${row.salary} ${row.salaryUnit}`
+                : "-",
+          },
+          {title: "发布时间", dataIndex: "createdAt"},
+          {
+            title: "状态",
+            dataIndex: "status",
+            render: (v: string) => {
+              const colorMap: Record<string, string> = {
+                pending: "orange",
+                approved: "green",
+                rejected: "red",
+              };
+              const textMap: Record<string, string> = {
+                pending: "审核中",
+                approved: "已通过",
+                rejected: "已驳回",
+              };
+              return <Tag color={colorMap[v]}>{textMap[v]}</Tag>;
+            },
+          },
+          {
+            title: "操作",
+            render: () => (
+              <Space>
+                <a>编辑</a>
+                <a>删除</a>
+              </Space>
+            )
+          }
+        ]}
+        dataSource={[
+          {
+            id: 1,
+            name: "校园超市理货员",
+            type: "part-time",
+            salary: 18,
+            salaryUnit: "元/小时",
+            status: "pending",
+            createdAt: "2025-03-12",
+          },
+          {
+            id: 2,
+            name: "UI 设计实习生",
+            type: "intern",
+            salary: 150,
+            salaryUnit: "元/天",
+            status: "approved",
+            createdAt: "2025-03-10",
+          },
+          {
+            id: 3,
+            name: "线上问卷整理",
+            type: "part-time",
+            salary: 300,
+            salaryUnit: "元/天",
+            status: "rejected",
+            createdAt: "2025-03-08",
+          },
+        ]}
+      />
 
       <Modal
         title="发布新岗位"
@@ -296,7 +371,7 @@ const PartTime: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item label="岗位相关图片（最多 6 张）">
+          <Form.Item name="" label="岗位相关图片（最多 6 张）">
             <Upload
               listType="picture-card"
               fileList={fileList}

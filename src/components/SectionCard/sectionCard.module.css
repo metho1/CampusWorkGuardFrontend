@@ -1,13 +1,16 @@
 /*src/components/SectionCard/sectionCard.module.css*/
 
-/* tab样式 */
-.tabs :global(.ant-tabs-nav) {
-  margin-bottom: 0;
-}
-
 /* 工具栏 */
 .toolbar {
-  padding: 16px 0;
+  padding-bottom: 16px;
   border-bottom: 1px solid #f0f0f0;
   margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/*操作*/
+a{
+  color: #1890ff;
 }
