@@ -1,0 +1,46 @@
+/* src/components/StatCards/statCards.module.css */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.title {
+  color: #888;
+}
+
+.value {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 6px 0;
+}
+
+/* extra 通用样式 */
+.extra {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+/* 状态颜色 */
+.success {
+  color: #52c41a;
+}
+
+.warning {
+  color: #faad14;
+}
+
+.info {
+  color: #8c8c8c;
+}
+
+.danger {
+  color: #ff4d4f;
+}
+
+.icon {
+  font-size: 13px;
+}

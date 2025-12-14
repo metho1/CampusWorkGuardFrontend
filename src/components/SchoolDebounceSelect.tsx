@@ -5,8 +5,7 @@
 // useRef：用于处理异步请求的顺序
 // useMemo：缓存防抖后的函数
 import React, {useMemo, useRef, useState} from 'react';
-import type {SelectProps} from 'antd';
-import {Select, Spin} from 'antd'; // Select：Ant Design 下拉选择框
+import {Select, type SelectProps, Spin} from 'antd'; // Select：Ant Design 下拉选择框
 import debounce from 'lodash/debounce'; // debounce：lodash 的防抖函数
 import {fetchSchoolApi} from "@/api/school.ts";
 

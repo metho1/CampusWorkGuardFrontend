@@ -22,11 +22,12 @@ import {
 } from "@/api/auth.ts";
 import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
 import SendCodeButton from "@/components/SendCodeButton.tsx";
-import {useSearchParams} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
 
 const {TabPane} = Tabs;
 
 const LoginForm: React.FC = () => {
+  const navigate = useNavigate();
   // 当前 tab：jobSeeker / employer
   const [activeTab, setActiveTab] = useState("jobSeeker");
   // 根据 URl 中 type 参数来决定渲染哪个 Form 表单内容，请求哪个接口
@@ -39,7 +40,7 @@ const LoginForm: React.FC = () => {
   const [form] = Form.useForm();
   // 提交表单
   const onFinish = async (values: any) => {
-    if (!values.agree) {
+    if (mode.includes("register") && !values.agree) {
       message.warning("请勾选用户协议和隐私政策");
       return;
     }
@@ -71,9 +72,9 @@ const LoginForm: React.FC = () => {
       }
       // 企业端
       if (activeTab === "employer") {
-        if (mode === "employer-password") { // 姓名 + 密码 登录
+        if (mode === "employer-password") { // 邮箱 + 密码 登录
           res = await employerPasswordLoginApi({
-            name: values.name,
+            email: values.email,
             password: values.password,
           });
         } else if (mode === "employer-email") { // 邮箱 + 验证码 登录
@@ -88,7 +89,7 @@ const LoginForm: React.FC = () => {
             email: values.email,
             code: values.code,
             socialCode: values.socialCode,
-            licenseUrl: values.licenseUrl, // 图片地址
+            licenseUrl: values.licenseUrl.url, // 图片地址
           });
         }
       }
@@ -98,8 +99,8 @@ const LoginForm: React.FC = () => {
         if (token) {
           localStorage.setItem("token", token);
         }
-        message.success("登录成功");
-        window.location.href = "/home"; // 跳转
+        message.success(mode.includes("register") ? "注册成功" : "登录成功");
+        navigate("/home"); // 跳转
       } else {
         message.error(res.message || "登录失败");
       }
@@ -200,9 +201,7 @@ const LoginForm: React.FC = () => {
               <Form.Item name="vCode" rules={[{required: true, message: "请输入学信网在线验证码"}]}>
                 <Input size="large" prefix={<AuditOutlined/>} placeholder=" 学信网在线验证码"/>
               </Form.Item>
-              {/*loading={loading} disabled={loading}*/}
               <Button type="primary" htmlType="submit" size="large" block>
-                {/*{loading ? "正在验证中..." : "注册"}*/}
                 注册
               </Button>
               {/* 用户协议勾选 */}
@@ -232,9 +231,12 @@ const LoginForm: React.FC = () => {
         {/* ---------- 密码登录模式 ---------- */}
         {mode === "employer-password" && (
           <>
-            {/* 姓名 */}
-            <Form.Item name="name" rules={[{required: true, message: "请选择姓名"}]}>
-              <Input size="large" prefix={<UserOutlined/>} placeholder=" 姓名"/>
+            {/* 邮箱 */}
+            <Form.Item name="email" rules={[
+              {required: true, message: "请输入邮箱"},
+              {type: "email", message: "邮箱格式不正确"},
+            ]}>
+              <Input size="large" prefix={<MailOutlined/>} placeholder=" 企业邮箱"/>
             </Form.Item>
             {/* 密码 */}
             <Form.Item name="password" rules={[{required: true, message: "请输入密码"}]}>
@@ -246,7 +248,7 @@ const LoginForm: React.FC = () => {
             {/* 表单底部操作 */}
             <div style={{marginTop: 6, display: "flex", justifyContent: "space-between"}}>
               <Button type="link" onClick={() => setSearchParams({type: "employer-email"})} style={{padding: 0}}>
-                邮箱登录
+                验证码登录
               </Button>
               <Button type="link" onClick={() => setSearchParams({type: "employer-register"})} style={{padding: 0}}>
                 没有账号？去注册
@@ -309,7 +311,7 @@ const LoginForm: React.FC = () => {
               </Form.Item>
               {/* 营业执照 */}
               <Form.Item name="licenseUrl" rules={[{required: true, message: "请上传营业执照"}]}>
-                <Upload name="file" action='https://10.83.173.178:8080/api/auth/company/upload_license'
+                <Upload name="file" action='/api/auth/company/upload_license'
                         listType="picture" maxCount={1} accept="image/*"
                         onChange={(info) => {
                           const {status, response} = info.file;
@@ -333,9 +335,7 @@ const LoginForm: React.FC = () => {
                   <Button icon={<UploadOutlined/>}>上传营业执照</Button>
                 </Upload>
               </Form.Item>
-              {/*loading={loading} disabled={loading}*/}
               <Button type="primary" htmlType="submit" size="large" block>
-                {/*{loading ? "正在验证中..." : "注册"}*/}
                 注册
               </Button>
               {/* 用户协议勾选 */}
@@ -361,7 +361,6 @@ const LoginForm: React.FC = () => {
   return (
     <>
       {/* 顶部 tab */}
-      {/*defaultActiveKey="jobSeeker"*/}
       <Tabs
         activeKey={activeTab}
         onChange={(key) => {

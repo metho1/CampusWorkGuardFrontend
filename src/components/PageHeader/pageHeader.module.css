@@ -1,0 +1,12 @@
+/* src/components/PageHeader/pageHeader.module.css */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: #666;
+}
