@@ -1,0 +1,13 @@
+/*src/components/SectionCard/sectionCard.module.css*/
+
+/* tab样式 */
+.tabs :global(.ant-tabs-nav) {
+  margin-bottom: 0;
+}
+
+/* 工具栏 */
+.toolbar {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 8px;
+}
