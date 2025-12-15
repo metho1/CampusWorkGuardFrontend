@@ -7,7 +7,7 @@ import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
-import {createJobApi, getJobDetailApi, getJobListApi, updateJobApi,deleteJobApi} from "@/api/job";
+import {createJobApi, deleteJobApi, getJobDetailApi, getJobListApi, updateJobApi} from "@/api/job";
 
 const {TextArea} = Input;
 
@@ -84,6 +84,8 @@ const PartTime: React.FC = () => {
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [regionOptions, setRegionOptions] = useState<DefaultOptionType[]>([]);
+  const [jobStatus, setJobStatus] = useState<string>();
+  const [failInfo, setFailInfo] = useState<string>();
 
   // 获取岗位列表
   const fetchJobList = async (pageNo = 1) => {
@@ -154,6 +156,10 @@ const PartTime: React.FC = () => {
   };
   const hideModal = () => {
     setOpen(false);
+    setMode("create");
+    setEditingJobId(null);
+    setJobStatus(undefined);
+    setFailInfo(undefined);
     form.resetFields();
   };
 
@@ -203,8 +209,21 @@ const PartTime: React.FC = () => {
       const res = await getJobDetailApi(id);
       if (res.code === 200) {
         const data = res.data;
+        // 保存状态 & 失败原因
+        setJobStatus(data.status);
+        setFailInfo(data.failInfo);
         form.setFieldsValue({
-          ...data,
+          name: data.name,
+          type: data.type,
+          salary: data.salary,
+          salaryUnit: data.salaryUnit,
+          salaryPeriod: data.salaryPeriod,
+          content: data.content,
+          headcount: data.headcount,
+          major: data.major,
+          address: data.address,
+          shift: data.shift,
+          experience: data.experience,
         });
         await fillRegionForEdit(data.region); // 回填省市区
       } else {
@@ -377,7 +396,14 @@ const PartTime: React.FC = () => {
       />
 
       <Modal
-        title={mode === "create" ? "发布新岗位" : "编辑岗位"}
+        title={
+          <Space align="center">
+            <span>{mode === "create" ? "发布新岗位" : "编辑岗位"}</span>
+            {mode === "edit" && jobStatus === "rejected" && failInfo && (
+              <span style={{color: "#ff4d4f", fontSize: 14}}>（驳回原因：{failInfo}）</span>
+            )}
+          </Space>
+        }
         open={open} // 控制显示隐藏
         onCancel={hideModal} // 点击取消按钮或遮罩层的回调
         footer={null} // 使用表单内按钮替代默认按钮

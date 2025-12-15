@@ -15,7 +15,6 @@ export interface createJobParams {
   address: string; // 详细地址
   shift: string; // 工作时段
   experience: string; // 经验要求
-  // pictureList: string //岗位图片列表
 }
 
 // 发布岗位、修改岗位、删除岗位 接口的响应结果
@@ -72,11 +71,17 @@ export const getJobListApi = (data: getJobListParams) => {
   return request.post<getJobListResponse>("/company_user/job_list", data);
 };
 
+// 获取某个岗位详细信息接口的响应数据
+export interface jobDetailParams extends createJobParams {
+  status: string; // 审核状态
+  failInfo: string; // 驳回原因
+}
+
 // 获取某个岗位详细信息接口的响应结果
 export interface getJobDetailResponse {
   code: number;
   message: string;
-  data: createJobParams;
+  data: jobDetailParams;
 }
 
 // 获取某个岗位详细信息接口
