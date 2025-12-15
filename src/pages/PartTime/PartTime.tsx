@@ -1,14 +1,13 @@
 // src/pages/PartTime/PartTime.tsx
 import React, {useEffect, useState} from "react";
-import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag, Upload} from "antd";
+import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag} from "antd";
 import type {DefaultOptionType} from "antd/es/cascader";
 import {PlusOutlined} from "@ant-design/icons";
-import type {UploadFile} from "antd/es/upload/interface";
 import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
-import {createJobApi, getJobDetailApi, getJobListApi, updateJobApi} from "@/api/job";
+import {createJobApi, getJobDetailApi, getJobListApi, updateJobApi,deleteJobApi} from "@/api/job";
 
 const {TextArea} = Input;
 
@@ -81,7 +80,6 @@ const PartTime: React.FC = () => {
   // Modal相关状态
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [editingJobId, setEditingJobId] = useState<number | null>(null);
@@ -157,7 +155,6 @@ const PartTime: React.FC = () => {
   const hideModal = () => {
     setOpen(false);
     form.resetFields();
-    setFileList([]);
   };
 
   // 回填省市区（编辑时使用）
@@ -218,9 +215,31 @@ const PartTime: React.FC = () => {
     }
   };
 
-  // 图片上传处理（这里只做本地预览，不上传）
-  const handleUploadChange = ({fileList: nextFileList}: { fileList: UploadFile[] }) => {
-    setFileList(nextFileList);
+  // 删除岗位
+  const handleDelete = async (id: number) => {
+    Modal.confirm({
+      title: "确认删除该岗位？",
+      content: "删除后将无法恢复，请谨慎操作。",
+      okText: "确认删除",
+      cancelText: "取消",
+      okType: "danger",
+      async onOk() {
+        try {
+          const res = await deleteJobApi(id);
+          if (res.code === 200) {
+            message.success("岗位删除成功");
+            // 删除后刷新当前页
+            // 如果当前页只剩一条，删完后回到上一页（防止空页）
+            const nextPage = list.length === 1 && page > 1 ? page - 1 : page;
+            await fetchJobList(nextPage);
+          } else {
+            message.error(res.message || "删除失败");
+          }
+        } catch (err) {
+          message.error("删除失败，请稍后重试");
+        }
+      },
+    });
   };
 
   // 前端关键词检测
@@ -230,7 +249,6 @@ const PartTime: React.FC = () => {
   };
 
   const onFinish = async (values: any) => {
-    // values: { name, type, content, headcount, major, region, address, shift, salary, salaryUnit, salaryPeriod, ... }
 
     // 违规关键词校验
     const found = checkForbiddenKeywords(values);
@@ -244,10 +262,6 @@ const PartTime: React.FC = () => {
       message.error("薪资异常");
       return;
     }
-
-    // 组装图片（这里只返回本地 base64 或服务器 URL）
-    // TODO: 如果需要上传到服务器，请在这里实现上传逻辑并替换图片 URL 列表
-    // const images = (fileList || []).map((f) => f.url || f.thumbUrl || f.name);
 
     const params = {
       name: values.name,
@@ -283,19 +297,6 @@ const PartTime: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  // 上传前检查文件类型/大小（示例：限制 5MB）
-  const beforeUpload = (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      message.error("仅支持图片文件");
-      return Upload.LIST_IGNORE;
-    }
-    if (file.size / 1024 / 1024 >= 5) {
-      message.error("图片必须小于 5MB");
-      return Upload.LIST_IGNORE;
-    }
-    return true;
   };
 
   return (
@@ -361,7 +362,7 @@ const PartTime: React.FC = () => {
             render: (_: any, row: any) => (
               <Space>
                 <a onClick={() => handleEdit(row.id)}>编辑</a>
-                <a>删除</a>
+                <a onClick={() => handleDelete(row.id)}>删除</a>
               </Space>
             )
           }
@@ -490,32 +491,6 @@ const PartTime: React.FC = () => {
               </Form.Item>
             </Col>
           </Row>
-
-          <Form.Item name="pictureList" label="岗位相关图片（最多 6 张）">
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={handleUploadChange}
-              beforeUpload={beforeUpload}
-              multiple
-              accept="image/*"
-              onPreview={async (file) => {
-                const src = file.url || (file.thumbUrl as string);
-                const imgWindow = window.open(src);
-                imgWindow?.document.write(`<img src="${src}" />`);
-              }}
-            >
-              {fileList.length >= 6 ? null : (
-                <div>
-                  <PlusOutlined/>
-                  <div style={{marginTop: 8}}>上传</div>
-                </div>
-              )}
-            </Upload>
-            <div className={styles.uploadTip}>
-              建议宽 1200px，支持 jpg / png，单张不超过 5MB
-            </div>
-          </Form.Item>
 
           {/* 提示条：前端可提示已检测到的可疑项（占位） */}
           <Form.Item>

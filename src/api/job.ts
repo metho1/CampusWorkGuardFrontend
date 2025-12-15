@@ -18,7 +18,7 @@ export interface createJobParams {
   // pictureList: string //岗位图片列表
 }
 
-// 发布岗位、修改岗位 接口的响应结果
+// 发布岗位、修改岗位、删除岗位 接口的响应结果
 export interface createJobResponse {
   code: number;
   message: string;
@@ -82,6 +82,13 @@ export interface getJobDetailResponse {
 // 获取某个岗位详细信息接口
 export const getJobDetailApi = (id: number) => {
   return request.get<getJobDetailResponse>("/company_user/job_info", {
+    params: {id},
+  });
+};
+
+// 删除某个岗位信息接口
+export const deleteJobApi = (id: number) => {
+  return request.get<createJobResponse>("/company_user/delete_job", {
     params: {id},
   });
 };
