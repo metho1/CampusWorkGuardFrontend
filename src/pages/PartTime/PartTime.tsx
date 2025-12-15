@@ -1,5 +1,5 @@
 // src/pages/PartTime/PartTime.tsx
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag, Upload} from "antd";
 import type {DefaultOptionType} from "antd/es/cascader";
 import {PlusOutlined} from "@ant-design/icons";
@@ -8,7 +8,7 @@ import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
-import {createJobApi} from "@/api/job";
+import {createJobApi, getJobListApi} from "@/api/job";
 
 const {TextArea} = Input;
 
@@ -66,11 +66,49 @@ const forbiddenKeywords = [
  * 说明：此组件为 UI 实现，提交逻辑（调用后端）请在 onFinish 中实现。
  */
 const PartTime: React.FC = () => {
+  // 列表数据及状态
+  const [list, setList] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  // 筛选条件
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  // 分页
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
+
+  // Modal相关状态
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
   const [regionOptions, setRegionOptions] = useState<DefaultOptionType[]>([]);
+
+  // 获取岗位列表
+  const fetchJobList = async (pageNo = 1) => {
+    try {
+      setLoading(true);
+      const res = await getJobListApi({search, type, status, page: pageNo, pageSize,});
+      if (res.code === 200) {
+        setList(res.data.jobs);
+        setTotal(res.data.total);
+        setPage(pageNo);
+      } else {
+        message.error(res.message || "获取岗位列表失败");
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("获取岗位列表失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 组件加载时获取初始列表
+  useEffect(() => {
+    fetchJobList(1);
+  }, []);
 
   // 在 Modal 打开时加载省份数据
   const loadProvinces = async () => {
@@ -207,6 +245,14 @@ const PartTime: React.FC = () => {
 
       <SectionCard
         searchPlaceholder="搜索岗位名称"
+        searchValue={search}
+        statusValue={status}
+        typeValue={type}
+        onSearchChange={setSearch}
+        onStatusChange={setStatus}
+        onTypeChange={setType}
+        onFilter={() => fetchJobList(1)}
+        loading={loading}
         columns={[
           {title: "岗位名称", dataIndex: "name"},
           {
@@ -229,7 +275,7 @@ const PartTime: React.FC = () => {
               return `${row.salary} ${map[row.salaryUnit] || ""}`;
             },
           },
-          {title: "创建时间", dataIndex: "createdAt"},
+          {title: "创建时间", dataIndex: "createdAt", render: (v: string) => v?.slice(0, 10)},
           {
             title: "状态",
             dataIndex: "status",
@@ -257,35 +303,13 @@ const PartTime: React.FC = () => {
             )
           }
         ]}
-        dataSource={[
-          {
-            id: 4,
-            name: "校园超市理货员",
-            type: "part-time",
-            salary: 18,
-            salaryUnit: "hour",
-            status: "pending",
-            createdAt: "2025-03-12",
-          },
-          {
-            id: 2,
-            name: "UI 设计实习生",
-            type: "intern",
-            salary: 150,
-            salaryUnit: "day",
-            status: "approved",
-            createdAt: "2025-03-10",
-          },
-          {
-            id: 3,
-            name: "线上问卷整理",
-            type: "part-time",
-            salary: 300,
-            salaryUnit: "day",
-            status: "rejected",
-            createdAt: "2025-03-08",
-          },
-        ]}
+        dataSource={list}
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          onChange: fetchJobList,
+        }}
       />
 
       <Modal
