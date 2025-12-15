@@ -17,7 +17,7 @@ export interface createJobParams {
   experience: string; // 经验要求
 }
 
-// 发布岗位、修改岗位、删除岗位 接口的响应结果
+// 发布岗位、修改岗位、删除岗位、审核岗位 接口的响应结果
 export interface createJobResponse {
   code: number;
   message: string;
@@ -41,7 +41,7 @@ export const updateJobApi = (data: updateJobParams) => {
 
 // 获取/筛选 岗位列表接口的请求参数
 export interface getJobListParams {
-  search: string; // 搜索岗位名称关键字
+  search: string; // 搜索岗位名称/企业名称
   type: string; // 岗位类型
   status: string; // 岗位状态
   page: number; // 页码，从1开始
@@ -96,4 +96,40 @@ export const deleteJobApi = (id: number) => {
   return request.get<createJobResponse>("/company_user/delete_job", {
     params: {id},
   });
+};
+
+// 管理员获取/筛选 岗位列表接口的响应结果
+export interface adminGetJobListResponse {
+  code: number;
+  message: string;
+  data: {
+    total: number; // 总岗位数
+    jobs: Array<{
+      id: number; // 岗位ID
+      company: string; // 企业名称
+      name: string; // 岗位名称
+      type: string; // 岗位类型
+      salary: number; // 薪资标准
+      salaryUnit: string; //薪资单位
+      status: string; // 岗位状态
+      createdAt: string; // 创建时间
+    }>;
+  };
+}
+
+// 管理员获取/筛选 岗位列表接口
+export const adminGetJobListApi = (data: getJobListParams) => {
+  return request.post<adminGetJobListResponse>("/admin/job_list", data);
+}
+
+// 管理员审核岗位接口的请求参数
+export interface auditJobParams {
+  id: number; // 岗位ID
+  status: "approved" | "rejected"; // 审核操作
+  failInfo: string; // 驳回原因，action为approved时为空，rejected时必填
+}
+
+// 管理员审核岗位接口
+export const auditJobApi = (data: auditJobParams) => {
+  return request.post<createJobResponse>("/admin/review_job", data);
 };

@@ -7,7 +7,8 @@ import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
-import {createJobApi, deleteJobApi, getJobDetailApi, getJobListApi, updateJobApi} from "@/api/job";
+import {createJobApi, deleteJobApi, getJobDetailApi, getJobListApi, updateJobApi,auditJobApi} from "@/api/job";
+import {useUserStore} from "@/stores/userStore.ts";
 
 const {TextArea} = Input;
 
@@ -65,6 +66,8 @@ const forbiddenKeywords = [
  * 说明：此组件为 UI 实现，提交逻辑（调用后端）请在 onFinish 中实现。
  */
 const PartTime: React.FC = () => {
+  const {user} = useUserStore();
+  const isAdmin = user?.role === "admin";
   // 列表数据及状态
   const [list, setList] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -91,7 +94,8 @@ const PartTime: React.FC = () => {
   const fetchJobList = async (pageNo = 1) => {
     try {
       setLoading(true);
-      const res = await getJobListApi({search, type, status, page: pageNo, pageSize,});
+      const api = isAdmin ? adminGetJobListApi : getJobListApi;
+      const res = await api({search, type, status, page: pageNo, pageSize,});
       if (res.code === 200) {
         setList(res.data.jobs);
         setTotal(res.data.total);
@@ -100,7 +104,6 @@ const PartTime: React.FC = () => {
         message.error(res.message || "获取岗位列表失败");
       }
     } catch (err) {
-      console.error(err);
       message.error("获取岗位列表失败");
     } finally {
       setLoading(false);
@@ -198,7 +201,6 @@ const PartTime: React.FC = () => {
     form.setFieldValue("region", codes);
   };
 
-
   // 编辑岗位时加载岗位详情
   const handleEdit = async (id: number) => {
     try {
@@ -256,6 +258,64 @@ const PartTime: React.FC = () => {
           }
         } catch (err) {
           message.error("删除失败，请稍后重试");
+        }
+      },
+    });
+  };
+
+  // 管理员审核通过
+  const handleApprove = async () => {
+    try {
+      const res = await auditJobApi({
+        id: editingJobId!,
+        status: "approved",
+        failInfo: "",
+      });
+      if (res.code === 200) {
+        message.success("审核通过");
+        hideModal();
+        await fetchJobList(page);
+      } else {
+        message.error(res.message);
+      }
+    } catch {
+      message.error("审核失败");
+    }
+  };
+
+  // 管理员审核不通过
+  const handleReject = () => {
+    Modal.confirm({
+      title: "请输入驳回原因",
+      content: (
+        <Input.TextArea
+          autoFocus
+          rows={3}
+          placeholder="请输入审核不通过原因"
+          onChange={(e) => (window as any)._failInfo = e.target.value}
+        />
+      ),
+      okText: "确认驳回",
+      cancelText: "取消",
+      onOk: async () => {
+        const reason = (window as any)._failInfo;
+        if (!reason) {
+          message.error("请输入驳回原因");
+          return Promise.reject();
+        }
+
+        const res = await auditJobApi({
+          id: editingJobId!,
+          status: "rejected",
+          failInfo: reason,
+        });
+
+        if (res.code === 200) {
+          message.success("已驳回岗位");
+          hideModal();
+          fetchJobList(page);
+        } else {
+          message.error(res.message);
         }
       },
     });
@@ -323,11 +383,12 @@ const PartTime: React.FC = () => {
       <PageHeader
         title="兼职信息管理"
         desc="支持企业发布岗位，系统自动校验违规信息，管理员将在 24 小时内完成审核"
-        extra={<Button type="primary" icon={<PlusOutlined/>} onClick={showCreateModal}>发布新岗位</Button>}
+        extra={!isAdmin && (
+          <Button type="primary" icon={<PlusOutlined/>} onClick={showCreateModal}>发布新岗位</Button>)}
       />
 
       <SectionCard
-        searchPlaceholder="搜索岗位名称"
+        searchPlaceholder={isAdmin ? "搜索企业名称" : "搜索岗位名称"}
         searchValue={search}
         statusValue={status}
         typeValue={type}
@@ -337,16 +398,13 @@ const PartTime: React.FC = () => {
         onFilter={() => fetchJobList(1)}
         loading={loading}
         columns={[
+          ...(isAdmin
+            ? [{title: "企业名称", dataIndex: "company"}]
+            : []),
           {title: "岗位名称", dataIndex: "name"},
           {
-            title: "岗位类型", dataIndex: "type", render: (v: string) => {
-              const map: Record<string, string> = {
-                "part-time": "兼职",
-                "intern": "实习",
-                "full-time": "全职",
-              };
-              return map[v] || "-";
-            },
+            title: "岗位类型", dataIndex: "type", render: (v: string) =>
+              ({"part-time": "兼职", "intern": "实习", "full-time": "全职"}[v] || "-"),
           },
           {
             title: "薪资", dataIndex: "salary", render: (_: any, row: any) => {
@@ -362,28 +420,23 @@ const PartTime: React.FC = () => {
           {
             title: "状态",
             dataIndex: "status",
-            render: (v: string) => {
-              const colorMap: Record<string, string> = {
-                pending: "orange",
-                approved: "green",
-                rejected: "red",
-              };
-              const textMap: Record<string, string> = {
-                pending: "审核中",
-                approved: "已通过",
-                rejected: "已驳回",
-              };
-              return <Tag color={colorMap[v]}>{textMap[v]}</Tag>;
-            },
+            render: (v: string) => (
+              <Tag color={{pending: "orange", approved: "green", rejected: "red"}[v]}>
+                {{pending: "审核中", approved: "已通过", rejected: "已驳回"}[v]}
+              </Tag>
+            ),
           },
           {
             title: "操作",
-            render: (_: any, row: any) => (
-              <Space>
-                <a onClick={() => handleEdit(row.id)}>编辑</a>
-                <a onClick={() => handleDelete(row.id)}>删除</a>
-              </Space>
-            )
+            render: (_: any, row: any) =>
+              isAdmin ? (
+                <a onClick={() => handleEdit(row.id)}>审核</a>
+              ) : (
+                <Space>
+                  <a onClick={() => handleEdit(row.id)}>编辑</a>
+                  <a onClick={() => handleDelete(row.id)}>删除</a>
+                </Space>
+              ),
           }
         ]}
         dataSource={list}
@@ -423,13 +476,13 @@ const PartTime: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="name" label="岗位名称" rules={[{required: true, message: "请输入岗位名称"}]}>
-                <Input placeholder="请输入清晰的岗位名称" maxLength={80}/>
+                <Input placeholder="请输入清晰的岗位名称" maxLength={80} disabled={isAdmin}/>
               </Form.Item>
             </Col>
 
             <Col span={12}>
               <Form.Item name="type" label="岗位类型" rules={[{required: true, message: "请选择岗位类型"}]}>
-                <Select placeholder="请选择岗位类型" options={jobTypes}/>
+                <Select placeholder="请选择岗位类型" options={jobTypes} disabled={isAdmin}/>
               </Form.Item>
             </Col>
           </Row>
@@ -439,13 +492,10 @@ const PartTime: React.FC = () => {
               <Form.Item label="薪资标准" rules={[{required: true, message: "请输入薪资标准"}]}>
                 <Space.Compact style={{width: "100%"}}>
                   <Form.Item name="salary" noStyle>
-                    <InputNumber style={{width: "70%"}} min={0} placeholder="请输入薪资数额"/>
+                    <InputNumber style={{width: "70%"}} min={0} placeholder="请输入薪资数额" disabled={isAdmin}/>
                   </Form.Item>
                   <Form.Item name="salaryUnit" noStyle initialValue="hour">
-                    <Select
-                      style={{width: "30%"}}
-                      options={salaryUnits}
-                    />
+                    <Select style={{width: "30%"}} options={salaryUnits} disabled={isAdmin}/>
                   </Form.Item>
                 </Space.Compact>
               </Form.Item>
@@ -453,25 +503,25 @@ const PartTime: React.FC = () => {
 
             <Col span={12}>
               <Form.Item name="salaryPeriod" label="薪资发放周期" rules={[{required: true, message: "请选择发放周期"}]}>
-                <Select placeholder="请选择发放周期" options={salaryPeriods}/>
+                <Select placeholder="请选择发放周期" options={salaryPeriods} disabled={isAdmin}/>
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item name="content" label="工作内容" rules={[{required: true, message: "请填写工作内容和职责"}]}>
-            <TextArea rows={6} placeholder="请详细描述工作内容、职责、注意事项等"/>
+            <TextArea rows={6} placeholder="请详细描述工作内容、职责、注意事项等"  disabled={isAdmin}/>
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="headcount" label="招聘人数" rules={[{required: true, message: "请输入招聘人数"}]}>
-                <InputNumber placeholder="请输入招聘人数" min={1} style={{width: "100%"}}/>
+                <InputNumber placeholder="请输入招聘人数" min={1} style={{width: "100%"}} disabled={isAdmin}/>
               </Form.Item>
             </Col>
 
             <Col span={12}>
               <Form.Item name="major" label="专业要求" rules={[{required: true, message: "请选择专业要求"}]}>
-                <Select defaultValue="不限专业" options={majors}/>
+                <Select defaultValue="不限专业" options={majors} disabled={isAdmin}/>
               </Form.Item>
             </Col>
           </Row>
@@ -489,6 +539,7 @@ const PartTime: React.FC = () => {
                   placeholder="请选择省 / 市 / 区"
                   style={{width: "100%"}}
                   changeOnSelect={false}
+                  disabled={isAdmin}
                 />
               </Form.Item>
             </Col>
@@ -499,7 +550,7 @@ const PartTime: React.FC = () => {
                 label="详细地址"
                 rules={[{required: true, message: "请输入详细地址"}]}
               >
-                <Input placeholder="例如 xx街道 xx大厦"/>
+                <Input placeholder="例如 xx街道 xx大厦" disabled={isAdmin}/>
               </Form.Item>
             </Col>
           </Row>
@@ -507,13 +558,13 @@ const PartTime: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="shift" label="工作时段" rules={[{required: true, message: "请选择工作时段"}]}>
-                <Select placeholder="请选择工作时段" options={workShifts}/>
+                <Select placeholder="请选择工作时段" options={workShifts} disabled={isAdmin}/>
               </Form.Item>
             </Col>
 
             <Col span={12}>
               <Form.Item name="experience" label="经验要求" rules={[{required: true, message: "请选择经验要求"}]}>
-                <Select placeholder="请选择经验要求" options={experiences}/>
+                <Select placeholder="请选择经验要求" options={experiences} disabled={isAdmin}/>
               </Form.Item>
             </Col>
           </Row>
@@ -530,9 +581,20 @@ const PartTime: React.FC = () => {
           <Form.Item>
             <div className={styles.footer}>
               <Button onClick={hideModal}>取消</Button>
-              <Button type="primary" htmlType="submit" loading={submitting}>
-                {mode === "create" ? "发布岗位" : "保存修改"}
-              </Button>
+              {isAdmin ? (
+                <>
+                  <Button danger onClick={handleReject}>
+                    审核不通过
+                  </Button>
+                  <Button type="primary" onClick={handleApprove}>
+                    审核通过
+                  </Button>
+                </>
+              ) : (
+                <Button type="primary" htmlType="submit" loading={submitting}>
+                  {mode === "create" ? "发布岗位" : "保存修改"}
+                </Button>
+              )}
             </div>
           </Form.Item>
         </Form>
