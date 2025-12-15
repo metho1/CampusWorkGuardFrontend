@@ -8,7 +8,7 @@ import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
-import {createJobApi, getJobListApi} from "@/api/job";
+import {createJobApi, getJobDetailApi, getJobListApi, updateJobApi} from "@/api/job";
 
 const {TextArea} = Input;
 
@@ -83,6 +83,8 @@ const PartTime: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
+  const [mode, setMode] = useState<"create" | "edit">("create");
+  const [editingJobId, setEditingJobId] = useState<number | null>(null);
   const [regionOptions, setRegionOptions] = useState<DefaultOptionType[]>([]);
 
   // 获取岗位列表
@@ -145,7 +147,10 @@ const PartTime: React.FC = () => {
   };
 
   // 打开/关闭 Modal
-  const showModal = async () => {
+  const showCreateModal = async () => {
+    setMode("create");
+    setEditingJobId(null);
+    form.resetFields();
     setOpen(true);
     await loadProvinces(); // 加载省份数据
   };
@@ -153,6 +158,64 @@ const PartTime: React.FC = () => {
     setOpen(false);
     form.resetFields();
     setFileList([]);
+  };
+
+  // 回填省市区（编辑时使用）
+  const fillRegionForEdit = async (regionStr: string) => {
+    const codes = regionStr.split(",");
+    // 加载省
+    const provinceRes = await fetchLocationApi("");
+    const provinces = provinceRes.data.districts.map((p) => ({
+      label: p.name,
+      value: p.adcode,
+      isLeaf: false,
+    }));
+    const province = provinces.find(p => p.value === codes[0]);
+    // 加载市
+    const cityRes = await fetchLocationApi(province!.label);
+    province!.children = cityRes.data.districts.map((c) => ({
+      label: c.name,
+      value: c.adcode,
+      isLeaf: false,
+    }));
+
+    const city = province!.children.find(c => c.value === codes[1]);
+
+    // 加载区
+    const districtRes = await fetchLocationApi(city!.label);
+    city!.children = districtRes.data.districts.map((d) => ({
+      label: d.name,
+      value: d.adcode,
+      isLeaf: true,
+    }));
+
+    setRegionOptions([...provinces]);
+
+    // 回填表单
+    form.setFieldValue("region", codes);
+  };
+
+
+  // 编辑岗位时加载岗位详情
+  const handleEdit = async (id: number) => {
+    try {
+      setMode("edit");
+      setEditingJobId(id);
+      setOpen(true);
+
+      const res = await getJobDetailApi(id);
+      if (res.code === 200) {
+        const data = res.data;
+        form.setFieldsValue({
+          ...data,
+        });
+        await fillRegionForEdit(data.region); // 回填省市区
+      } else {
+        message.error(res.message || "获取岗位详情失败");
+      }
+    } catch (e) {
+      message.error("获取岗位详情失败");
+    }
   };
 
   // 图片上传处理（这里只做本地预览，不上传）
@@ -182,10 +245,6 @@ const PartTime: React.FC = () => {
       return;
     }
 
-    // 处理省 / 市 / 区（Cascader 返回的是数组)
-    // 如： ["420000", "420100", "420111"]  转成 "420000,420100,420111"
-    const regionText = values.region.toString();
-
     // 组装图片（这里只返回本地 base64 或服务器 URL）
     // TODO: 如果需要上传到服务器，请在这里实现上传逻辑并替换图片 URL 列表
     // const images = (fileList || []).map((f) => f.url || f.thumbUrl || f.name);
@@ -199,7 +258,8 @@ const PartTime: React.FC = () => {
       content: values.content,
       headcount: values.headcount,
       major: values.major,
-      region: regionText,
+      region: values.region.toString(), // 处理省 / 市 / 区（Cascader 返回的是数组)
+      // 如： ["420000", "420100", "420111"]  转成 "420000,420100,420111"
       address: values.address,
       shift: values.shift,
       experience: values.experience,
@@ -208,10 +268,13 @@ const PartTime: React.FC = () => {
     // 提交表单
     try {
       setSubmitting(true);
-      const res = await createJobApi(params);
+      const res = mode === "create"
+        ? await createJobApi(params)
+        : await updateJobApi({id: editingJobId!, ...params});
       if (res.code === 200) {
-        message.success("岗位发布提交成功（后台将在 24 小时内审核）");
+        message.success(mode === "create" ? "岗位发布提交成功（后台将在 24 小时内审核）" : "岗位修改成功");
         hideModal();
+        await fetchJobList(page);
       } else {
         message.error(res.message || "发布失败");
       }
@@ -240,7 +303,7 @@ const PartTime: React.FC = () => {
       <PageHeader
         title="兼职信息管理"
         desc="支持企业发布岗位，系统自动校验违规信息，管理员将在 24 小时内完成审核"
-        extra={<Button type="primary" icon={<PlusOutlined/>} onClick={showModal}>发布新岗位</Button>}
+        extra={<Button type="primary" icon={<PlusOutlined/>} onClick={showCreateModal}>发布新岗位</Button>}
       />
 
       <SectionCard
@@ -295,9 +358,9 @@ const PartTime: React.FC = () => {
           },
           {
             title: "操作",
-            render: () => (
+            render: (_: any, row: any) => (
               <Space>
-                <a>编辑</a>
+                <a onClick={() => handleEdit(row.id)}>编辑</a>
                 <a>删除</a>
               </Space>
             )
@@ -313,7 +376,7 @@ const PartTime: React.FC = () => {
       />
 
       <Modal
-        title="发布新岗位"
+        title={mode === "create" ? "发布新岗位" : "编辑岗位"}
         open={open} // 控制显示隐藏
         onCancel={hideModal} // 点击取消按钮或遮罩层的回调
         footer={null} // 使用表单内按钮替代默认按钮
@@ -346,9 +409,11 @@ const PartTime: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="salary" label="薪资标准" rules={[{required: true, message: "请输入薪资标准"}]}>
+              <Form.Item label="薪资标准" rules={[{required: true, message: "请输入薪资标准"}]}>
                 <Space.Compact style={{width: "100%"}}>
-                  <InputNumber style={{width: "70%"}} min={0} placeholder="请输入薪资数额"/>
+                  <Form.Item name="salary" noStyle>
+                    <InputNumber style={{width: "70%"}} min={0} placeholder="请输入薪资数额"/>
+                  </Form.Item>
                   <Form.Item name="salaryUnit" noStyle initialValue="hour">
                     <Select
                       style={{width: "30%"}}
@@ -465,7 +530,7 @@ const PartTime: React.FC = () => {
             <div className={styles.footer}>
               <Button onClick={hideModal}>取消</Button>
               <Button type="primary" htmlType="submit" loading={submitting}>
-                发布岗位
+                {mode === "create" ? "发布岗位" : "保存修改"}
               </Button>
             </div>
           </Form.Item>

@@ -18,7 +18,7 @@ export interface createJobParams {
   // pictureList: string //岗位图片列表
 }
 
-// 发布岗位接口的响应结果
+// 发布岗位、修改岗位 接口的响应结果
 export interface createJobResponse {
   code: number;
   message: string;
@@ -27,7 +27,17 @@ export interface createJobResponse {
 
 // 发布岗位接口
 export const createJobApi = (data: createJobParams) => {
-  return request.post<createJobResponse>("/company_user/post_job", data);
+  return request.post<createJobResponse>("/company_user/add_job", data);
+};
+
+// 修改岗位接口的请求参数
+export interface updateJobParams extends createJobParams {
+  id: number; // 岗位ID
+}
+
+// 修改岗位接口
+export const updateJobApi = (data: updateJobParams) => {
+  return request.post<createJobResponse>("/company_user/update_job", data);
 };
 
 // 获取/筛选 岗位列表接口的请求参数
@@ -60,4 +70,18 @@ export interface getJobListResponse {
 // 获取/筛选 岗位列表接口
 export const getJobListApi = (data: getJobListParams) => {
   return request.post<getJobListResponse>("/company_user/job_list", data);
+};
+
+// 获取某个岗位详细信息接口的响应结果
+export interface getJobDetailResponse {
+  code: number;
+  message: string;
+  data: createJobParams;
+}
+
+// 获取某个岗位详细信息接口
+export const getJobDetailApi = (id: number) => {
+  return request.get<getJobDetailResponse>("/company_user/job_info", {
+    params: {id},
+  });
 };
