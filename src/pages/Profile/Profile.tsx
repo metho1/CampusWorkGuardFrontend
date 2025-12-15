@@ -30,7 +30,8 @@ import {
   getCompanyInfoApi,
   getStudentInfoApi,
   studentChangePasswordApi,
-  type StudentInfoResponse
+  type StudentInfoResponse,
+  adminChangePasswordApi
 } from "@/api/user.ts";
 import {resolveUrl} from "@/config.ts";
 import {useUserStore} from "@/stores/userStore.ts";
@@ -39,7 +40,8 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const {user} = useUserStore();
-  const role = user?.role; // "student" 或 "company"
+  const role = user?.role; // "student" 或 "company" 或 "admin"
+  const isAdmin = role === "admin";
   const updateAvatar = useUserStore(state => state.updateAvatar);
   const [StudentInfo, setStudentInfo] = useState<StudentInfoResponse["data"] | null>(null);
   const [CompanyInfo, setCompanyInfo] = useState<CompanyInfoResponse["data"] | null>(null);
@@ -52,7 +54,7 @@ const Profile: React.FC = () => {
           const res = await getStudentInfoApi();
           if (res.code === 200) setStudentInfo(res.data);
           else throw new Error();
-        } else {
+        } else if(role === "company") {
           const res = await getCompanyInfoApi();
           if (res.code === 200) setCompanyInfo(res.data);
           else throw new Error();
@@ -68,8 +70,14 @@ const Profile: React.FC = () => {
   // 修改密码
   const onChangePassword = async (values: any) => {
     try {
-      const api =
-        role === "student" ? studentChangePasswordApi : companyChangePasswordApi;
+      let api;
+      if(role==="student"){
+        api = studentChangePasswordApi;
+      }else if(role==="company"){
+        api = companyChangePasswordApi;
+      }else{
+        api = adminChangePasswordApi;
+      }
       const res = await api({password: values.newPwd});
       if (res.code === 200) {
         message.success("密码修改成功，请重新登录");
@@ -105,7 +113,7 @@ const Profile: React.FC = () => {
   return (
     <Card className={styles.cardWrapper}>
       {/* --------------- 头像区域 --------------- */}
-      <div className={styles.avatarWrapper}>
+      {!isAdmin && <div className={styles.avatarWrapper}>
         <Avatar size={100} src={avatarUrl
           ? resolveUrl(avatarUrl)
           : "https://i.pravatar.cc/150?img=3"}/>
@@ -143,9 +151,9 @@ const Profile: React.FC = () => {
                 }}>
           <Button size="small" shape="circle" icon={<EditOutlined/>} className={styles.avatarEdit}/>
         </Upload>
-      </div>
+      </div>}
       {/* ------------- 个人信息展示（三列） ------------- */}
-      <div className={styles.sectionTitle}>个人信息</div>
+      {!isAdmin && <div className={styles.sectionTitle}>个人信息</div>}
       {/*学生信息*/}
       {role === "student" && (
         <div className={styles.threeCols}>
