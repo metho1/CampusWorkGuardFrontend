@@ -51,13 +51,13 @@ const SectionCard: React.FC<Props> = ({
                     {label: "已通过", value: "approved"},
                     {label: "已驳回", value: "rejected"},
                   ]}/>
-          <Select style={{width: 120}} value={typeValue} onChange={onTypeChange}
-                  options={[
-                    {label: "所有类型", value: ""},
-                    {label: "兼职", value: "part-time"},
-                    {label: "实习", value: "intern"},
-                    {label: "全职", value: "full-time"},
-                  ]}/>
+          {typeValue && (<Select style={{width: 120}} value={typeValue} onChange={onTypeChange}
+                                 options={[
+                                   {label: "所有类型", value: ""},
+                                   {label: "兼职", value: "part-time"},
+                                   {label: "实习", value: "intern"},
+                                   {label: "全职", value: "full-time"},
+                                 ]}/>)}
           <Button icon={<FilterOutlined/>} onClick={onFilter}>筛选</Button>
         </Space>
       </div>

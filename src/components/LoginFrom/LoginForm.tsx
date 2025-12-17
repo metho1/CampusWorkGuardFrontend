@@ -108,11 +108,11 @@ const LoginForm: React.FC = () => {
       }
       // 统一处理响应结果
       if (res.code === 200) {
-        const {token,role} = res.data || {};
+        const {token, role} = res.data || {};
         if (token) {
           localStorage.setItem("token", token);
         }
-        if(role){
+        if (role) {
           setUser({role});
         }
         message.success(mode.includes("register") ? "注册成功" : "登录成功");
