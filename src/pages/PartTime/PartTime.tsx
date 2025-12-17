@@ -7,7 +7,15 @@ import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import SectionCard from "@/components/SectionCard/SectionCard.tsx";
-import {createJobApi, deleteJobApi, getJobDetailApi, getJobListApi, updateJobApi,auditJobApi} from "@/api/job";
+import {
+  adminGetJobListApi,
+  auditJobApi,
+  createJobApi,
+  deleteJobApi,
+  getJobDetailApi,
+  getJobListApi,
+  updateJobApi
+} from "@/api/job";
 import {useUserStore} from "@/stores/userStore.ts";
 
 const {TextArea} = Input;
@@ -94,7 +102,9 @@ const PartTime: React.FC = () => {
   const fetchJobList = async (pageNo = 1) => {
     try {
       setLoading(true);
-      const api = isAdmin ? adminGetJobListApi : getJobListApi;
+      const role = user?.role;
+      if (!role) return;
+      const api = role === "admin" ? adminGetJobListApi : getJobListApi;
       const res = await api({search, type, status, page: pageNo, pageSize,});
       if (res.code === 200) {
         setList(res.data.jobs);
@@ -112,8 +122,9 @@ const PartTime: React.FC = () => {
 
   // 组件加载时获取初始列表
   useEffect(() => {
+    if (!user?.role) return;
     fetchJobList(1);
-  }, []);
+  }, [user?.role]);
 
   // 在 Modal 打开时加载省份数据
   const loadProvinces = async () => {
@@ -509,7 +520,7 @@ const PartTime: React.FC = () => {
           </Row>
 
           <Form.Item name="content" label="工作内容" rules={[{required: true, message: "请填写工作内容和职责"}]}>
-            <TextArea rows={6} placeholder="请详细描述工作内容、职责、注意事项等"  disabled={isAdmin}/>
+            <TextArea rows={6} placeholder="请详细描述工作内容、职责、注意事项等" disabled={isAdmin}/>
           </Form.Item>
 
           <Row gutter={16}>

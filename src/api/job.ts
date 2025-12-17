@@ -119,7 +119,7 @@ export interface adminGetJobListResponse {
 
 // 管理员获取/筛选 岗位列表接口
 export const adminGetJobListApi = (data: getJobListParams) => {
-  return request.post<adminGetJobListResponse>("/admin/job_list", data);
+  return request.post<adminGetJobListResponse>("/admin_user/job_list", data);
 }
 
 // 管理员审核岗位接口的请求参数
@@ -131,5 +131,5 @@ export interface auditJobParams {
 
 // 管理员审核岗位接口
 export const auditJobApi = (data: auditJobParams) => {
-  return request.post<createJobResponse>("/admin/review_job", data);
+  return request.post<createJobResponse>("/admin_user/review_job", data);
 };

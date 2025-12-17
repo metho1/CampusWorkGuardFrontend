@@ -13,10 +13,10 @@ import {
 } from "@ant-design/icons";
 import {Outlet, useNavigate} from "react-router-dom";
 import styles from "./home.module.css";
-import {getUserStaticInfoApi, type StaticInfoResponse} from "@/api/user";
+import {getUserStaticInfoApi} from "@/api/user";
 import {resolveUrl} from "@/config.ts";
 import {deleteEmployerRegisterInfoApi} from "@/api/user.ts";
-import { useUserStore } from "@/stores/userStore.ts";
+import {useUserStore} from "@/stores/userStore.ts";
 
 const {Header, Sider, Content} = Layout;
 
@@ -76,7 +76,7 @@ const MainLayout: React.FC = () => {
     navigate("/login");
   };
   // 获取用户信息：姓名 + 头像
-  const { user, setUser } = useUserStore();
+  const {user, setUser} = useUserStore();
   useEffect(() => {
     getUserStaticInfoApi().then(res => {
       if (res.code === 200) {

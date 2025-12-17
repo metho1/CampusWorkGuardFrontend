@@ -8,7 +8,7 @@ export interface StaticInfoResponse {
   data: {
     name: string;
     avatar_url: string;
-    role: "student" | "company";
+    role: "student" | "company" | "admin";
     verify_status: "verified" | "unverified" | "pending";
     fail_info?: string;
   };

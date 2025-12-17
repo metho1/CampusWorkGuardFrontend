@@ -12,6 +12,7 @@ import {
   UserOutlined
 } from '@ant-design/icons';
 import {
+  adminPasswordLoginApi,
   emailLoginApi,
   employerEmailLoginApi,
   employerPasswordLoginApi,
@@ -28,7 +29,7 @@ const {TabPane} = Tabs;
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  // 当前 tab：jobSeeker / employer
+  // 当前 tab：jobSeeker / employer / admin
   const [activeTab, setActiveTab] = useState("jobSeeker");
   // 根据 URl 中 type 参数来决定渲染哪个 Form 表单内容，请求哪个接口
   // 学生端：password / email / register 企业端：employer-password / employer-email / employer-register
@@ -90,6 +91,15 @@ const LoginForm: React.FC = () => {
             code: values.code,
             socialCode: values.socialCode,
             licenseUrl: values.licenseUrl.url, // 图片地址
+          });
+        }
+      }
+      // 管理员端
+      if (activeTab === "admin") {
+        if (mode === "admin-password") {
+          res = await adminPasswordLoginApi({
+            name: values.name,
+            password: values.password,
           });
         }
       }
@@ -357,6 +367,24 @@ const LoginForm: React.FC = () => {
     );
   };
 
+  const renderAdminForm = () => {
+    return (
+      <>
+        {/*用户名*/}
+        <Form.Item name="name" rules={[{required: true, message: "请输入管理员用户名"}]}>
+          <Input size="large" prefix={<UserOutlined/>} placeholder=" 管理员用户名"/>
+        </Form.Item>
+        {/*密码*/}
+        <Form.Item name="password" rules={[{required: true, message: "请输入密码"}]}>
+          <Input.Password size="large" prefix={<LockOutlined/>} placeholder=" 密码"
+                          iconRender={(visible) => visible ? <EyeTwoTone/> : <EyeInvisibleOutlined/>}
+          />
+        </Form.Item>
+        {/*登录按钮*/}
+        <Button type="primary" htmlType="submit" size="large" block loading={loading}>登录</Button>
+      </>
+    );
+  };
 
   return (
     <>
@@ -369,18 +397,22 @@ const LoginForm: React.FC = () => {
           setSearchParams(
             key === "jobSeeker"
               ? {type: "password"}
-              : {type: "employer-password"}
+              : key === "employer"
+                ? {type: "employer-password"}
+                : {type: "admin-password"}
           );
         }}
         centered
       >
         <TabPane tab="我要找工作" key="jobSeeker"/>
         <TabPane tab="我要招聘" key="employer"/>
+        <TabPane tab="管理员登录" key="admin"/>
       </Tabs>
 
       <Form form={form} onFinish={onFinish} layout="vertical">
         {activeTab === "jobSeeker" && renderJobSeekerForm()}
         {activeTab === "employer" && renderEmployerForm()}
+        {activeTab === "admin" && renderAdminForm()}
       </Form>
     </>
   );
