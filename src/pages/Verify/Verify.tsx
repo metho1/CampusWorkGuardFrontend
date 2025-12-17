@@ -1,10 +1,11 @@
 // src/pages/Verify/Verify.tsx
 import React, {useEffect, useState} from "react";
-import {Image, Input, message, Modal, Space, Tag} from "antd";
+import {Button, Image, Input, message, Modal, Select, Space, Tag} from "antd";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import SectionCard from "@/components/SectionCard/SectionCard";
 import {getCompanyListApi, reviewCompanyApi} from "@/api/admin";
 import {resolveUrl} from "@/config.ts";
+import {FilterOutlined} from "@ant-design/icons";
 
 const Verify: React.FC = () => {
   // 列表数据
@@ -109,11 +110,27 @@ const Verify: React.FC = () => {
       <SectionCard
         searchPlaceholder="搜索企业名称"
         searchValue={search}
-        statusValue={status}
         onSearchChange={setSearch}
-        onStatusChange={setStatus}
         onFilter={() => fetchCompanyList(1)}
         loading={loading}
+        filters={
+          <>
+            <Select
+              style={{width: 120}}
+              value={status}
+              onChange={setStatus}
+              options={[
+                {label: "所有状态", value: ""},
+                {label: "审核中", value: "pending"},
+                {label: "已通过", value: "verified"},
+                {label: "已驳回", value: "unverified"},
+              ]}
+            />
+            <Button icon={<FilterOutlined/>} onClick={() => fetchCompanyList(1)}>
+              筛选
+            </Button>
+          </>
+        }
         columns={[
           {title: "企业名称", dataIndex: "company"},
           {title: "注册人姓名", dataIndex: "name"},

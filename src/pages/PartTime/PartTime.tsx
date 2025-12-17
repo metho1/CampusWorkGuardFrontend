@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag} from "antd";
 import type {DefaultOptionType} from "antd/es/cascader";
-import {PlusOutlined} from "@ant-design/icons";
+import {PlusOutlined,FilterOutlined} from "@ant-design/icons";
 import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
@@ -38,12 +38,37 @@ const salaryPeriods = [
   {label: "按周", value: "week"},
   {label: "按月", value: "month"},
 ];
-// 专业要求多选: 不限专业、计算机类、设计类、金融类
+// 专业要求单选: 不限专业、计算机类、设计类、金融类
 const majors = [
-  {label: "不限专业", value: "any"},
-  {label: "计算机类", value: "cs"},
-  {label: "设计类", value: "design"},
-  {label: "金融类", value: "finance"},
+  {label: "不限专业", value: "ANY"},
+  {label: "计算机类", value: "CS"},
+  {label: "电子信息类", value: "EI"},
+  {label: "机械类", value: "ME"},
+  {label: "土木类", value: "CE"},
+  {label: "自动化类", value: "AU"},
+  {label: "电气类", value: "EE"},
+  {label: "化工与制药类", value: "CEP"},
+  {label: "材料类", value: "MT"},
+  {label: "数学类", value: "MA"},
+  {label: "物理类", value: "PH"},
+  {label: "化学类", value: "CH"},
+  {label: "生物科学类", value: "BS"},
+  {label: "工商管理类", value: "BA"},
+  {label: "经济学类", value: "EC"},
+  {label: "金融学类", value: "FN"},
+  {label: "会计学类", value: "AC"},
+  {label: "中国语言文学类", value: "CL"},
+  {label: "新闻传播学类", value: "JC"},
+  {label: "历史学类", value: "HS"},
+  {label: "法学类", value: "LW"},
+  {label: "临床医学类", value: "CM"},
+  {label: "护理学类", value: "NS"},
+  {label: "药学类", value: "PHAR"},
+  {label: "农学类", value: "AG"},
+  {label: "林学类", value: "FO"},
+  {label: "美术学类", value: "FA"},
+  {label: "音乐与舞蹈学类", value: "MD"},
+  {label: "戏剧与影视学类", value: "TF"}
 ];
 // 工作时段单选: 白班、夜班、轮班
 const workShifts = [
@@ -401,13 +426,38 @@ const PartTime: React.FC = () => {
       <SectionCard
         searchPlaceholder={isAdmin ? "搜索企业名称" : "搜索岗位名称"}
         searchValue={search}
-        statusValue={status}
-        typeValue={type}
         onSearchChange={setSearch}
-        onStatusChange={setStatus}
-        onTypeChange={setType}
         onFilter={() => fetchJobList(1)}
         loading={loading}
+        filters={
+          <>
+            <Select
+              style={{ width: 120 }}
+              value={status}
+              onChange={setStatus}
+              options={[
+                { label: "所有状态", value: "" },
+                { label: "审核中", value: "pending" },
+                { label: "已通过", value: "approved" },
+                { label: "已驳回", value: "rejected" },
+              ]}
+            />
+            <Select
+              style={{ width: 120 }}
+              value={type}
+              onChange={setType}
+              options={[
+                { label: "所有类型", value: "" },
+                { label: "兼职", value: "part-time" },
+                { label: "实习", value: "intern" },
+                { label: "全职", value: "full-time" },
+              ]}
+            />
+            <Button icon={<FilterOutlined />} onClick={() => fetchJobList(1)}>
+              筛选
+            </Button>
+          </>
+        }
         columns={[
           ...(isAdmin
             ? [{title: "企业名称", dataIndex: "company"}]
