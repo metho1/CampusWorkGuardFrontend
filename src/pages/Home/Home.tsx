@@ -10,51 +10,72 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   TeamOutlined,
+  VerifiedOutlined
 } from "@ant-design/icons";
 import {Outlet, useNavigate} from "react-router-dom";
 import styles from "./home.module.css";
-import {getUserStaticInfoApi, type StaticInfoResponse} from "@/api/user";
+import {getUserStaticInfoApi} from "@/api/user";
 import {resolveUrl} from "@/config.ts";
 import {deleteEmployerRegisterInfoApi} from "@/api/user.ts";
-import { useUserStore } from "@/stores/userStore.ts";
+import {useUserStore} from "@/stores/userStore.ts";
 
 const {Header, Sider, Content} = Layout;
+type Role = "student" | "company" | "admin";
 
 const MainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const {user, updateUser, clearUser} = useUserStore();
   const menuItems = [
+    {
+      key: "/home/verify",
+      icon: <VerifiedOutlined/>,
+      label: "企业认证审核",
+      roles: ["admin"],
+    },
     {
       key: "/home/part-time",
       icon: <TeamOutlined/>,
       label: "兼职信息管理",
+      roles: ["company", "admin"],
     },
     {
       key: "/home/match",
       icon: <DeploymentUnitOutlined/>,
       label: "智能匹配",
+      roles: ["student", "company"],
     },
     {
       key: "/home/salary",
       icon: <DollarOutlined/>,
       label: "薪资担保",
+      roles: ["company", "admin"],
     },
     {
       key: "/home/attendance",
       icon: <ClockCircleOutlined/>,
       label: "考勤与工作记录",
+      roles: ["student", "company"],
     },
     {
       key: "/home/complaint",
       icon: <ExclamationCircleOutlined/>,
       label: "投诉维权",
+      roles: ["student", "company", "admin"],
     },
     {
       key: "/home/statistics",
       icon: <BarChartOutlined/>,
       label: "数据统计分析",
+      roles: ["student", "company", "admin"],
     },
   ];
+  const role = user?.role as Role | undefined;
+  // 菜单项，根据不同角色显示不同菜单
+  const visibleMenuItems = React.useMemo(() => {
+    if (!role) return [];
+    return menuItems.filter(item => item.roles.includes(role));
+  }, [role]);
   const userMenu = {
     onClick: ({key}: { key: string }) => {
       if (key === "logout") {
@@ -76,18 +97,24 @@ const MainLayout: React.FC = () => {
     navigate("/login");
   };
   // 获取用户信息：姓名 + 头像
-  const { user, setUser } = useUserStore();
   useEffect(() => {
     getUserStaticInfoApi().then(res => {
       if (res.code === 200) {
-        setUser(res.data);
+        updateUser({
+          name: res.data.name,
+          avatar_url: res.data.avatar_url,
+          verify_status: res.data.verify_status,
+          fail_info: res.data.fail_info,
+        });
       } else {
         message.error("身份过期，请重新登录");
         localStorage.removeItem("token");
+        clearUser();
         navigate("/login");
       }
     }).catch(() => {
       message.error("请先登录");
+      clearUser();
       navigate("/login");
     });
   }, []);
@@ -110,7 +137,7 @@ const MainLayout: React.FC = () => {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
-          items={menuItems}
+          items={visibleMenuItems}
           onClick={(item) => navigate(item.key)}
         />
       </Sider>

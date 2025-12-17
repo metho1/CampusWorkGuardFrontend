@@ -134,6 +134,7 @@ const Complaint: React.FC = () => {
             status: "approved"
           }
         ]}
+        pagination={{pageSize:5}}
       />
     </>
   );

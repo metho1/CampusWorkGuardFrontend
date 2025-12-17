@@ -8,7 +8,7 @@ export interface StaticInfoResponse {
   data: {
     name: string;
     avatar_url: string;
-    role: "student" | "company";
+    role: "student" | "company" | "admin";
     verify_status: "verified" | "unverified" | "pending";
     fail_info?: string;
   };
@@ -32,6 +32,11 @@ export const studentChangePasswordApi = (data: ChangePasswordParams) => {
 // 企业修改密码接口
 export const companyChangePasswordApi = (data: ChangePasswordParams) => {
   return request.post("/company_user/set_password", data);
+};
+
+// 管理员修改密码接口
+export const adminChangePasswordApi = (data: ChangePasswordParams) => {
+  return request.post("/admin_user/set_password", data);
 };
 
 // 获取学生用户信息接口的响应结果

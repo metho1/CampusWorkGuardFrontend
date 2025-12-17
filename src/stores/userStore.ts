@@ -1,14 +1,45 @@
+// src/stores/userStore.ts
 import {create} from "zustand";
+import {persist} from "zustand/middleware";
 
-interface UserState {
-  user: any | null;
-  setUser: (user: any) => void;
-  updateAvatar: (url: string) => void;
+export interface UserInfo {
+  role: "student" | "company" | "admin";
+  name?: string;
+  avatar_url?: string;
+  verify_status?: "pending" | "verified" | "unverified";
+  fail_info?: string;
 }
 
-export const useUserStore = create<UserState>((set) => ({
-  user: null,
-  setUser: (user) => set({ user }),
-  updateAvatar: (url) =>
-    set((state) => ({ user: state.user ? { ...state.user, avatar_url: url } : null })),
-}));
+interface UserState {
+  user: UserInfo | null;
+  setUser: (user: UserInfo) => void;
+  updateUser: (partial: Partial<UserInfo>) => void;
+  clearUser: () => void;
+}
+
+// export const useUserStore = create<UserState>((set) => ({
+//   user: null,
+//   setUser: (user) => set({user}),
+//   updateUser: (partial) =>
+//     set((state) => ({
+//       user: state.user ? {...state.user, ...partial} : null,
+//     })),
+//   clearUser: () => set({user: null}),
+// }));
+
+export const useUserStore = create<UserState>()(
+  persist(
+    (set) => ({
+      user: null,
+      setUser: (user) => set({user}),
+      updateUser: (partial) =>
+        set((state) => ({
+          user: state.user ? {...state.user, ...partial} : null,
+        })),
+      clearUser: () => set({user: null}),
+    }),
+    {
+      name: "user-store", // localStorage key
+    }
+  )
+);

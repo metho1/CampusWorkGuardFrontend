@@ -26,6 +26,7 @@ export interface LoginRegisterResponse {
     message: string;
     data: {
         token: string;
+        role: "student" | "company" | "admin";
     };
 }
 
@@ -69,7 +70,7 @@ export const registerApi = (data: RegisterParams) => {
 
 // 企业密码登录的接口参数
 export interface EmployerPasswordLoginParams {
-    name: string;
+    email: string;
     password: string;
 }
 
@@ -102,4 +103,15 @@ export interface EmployerRegisterParams {
 // 企业注册接口
 export const employerRegisterApi = (data: EmployerRegisterParams) => {
     return request.post<LoginRegisterResponse>("/auth/company/register", data);
+};
+
+// 管理员密码登录的接口参数
+export interface AdminPasswordLoginParams {
+    name: string;
+    password: string;
+}
+
+// 管理员密码登录接口
+export const adminPasswordLoginApi = (data: AdminPasswordLoginParams) => {
+    return request.post<LoginRegisterResponse>("/auth/admin/login", data);
 };
