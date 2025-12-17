@@ -25,13 +25,13 @@ import {
 import styles from "./profile.module.css";
 import {useNavigate} from "react-router-dom";
 import {
+  adminChangePasswordApi,
   companyChangePasswordApi,
   type CompanyInfoResponse,
   getCompanyInfoApi,
   getStudentInfoApi,
   studentChangePasswordApi,
-  type StudentInfoResponse,
-  adminChangePasswordApi
+  type StudentInfoResponse
 } from "@/api/user.ts";
 import {resolveUrl} from "@/config.ts";
 import {useUserStore} from "@/stores/userStore.ts";
@@ -42,7 +42,7 @@ const Profile: React.FC = () => {
   const {user} = useUserStore();
   const role = user?.role; // "student" 或 "company" 或 "admin"
   const isAdmin = role === "admin";
-  const updateAvatar = useUserStore(state => state.updateAvatar);
+  const {updateUser} = useUserStore();
   const [StudentInfo, setStudentInfo] = useState<StudentInfoResponse["data"] | null>(null);
   const [CompanyInfo, setCompanyInfo] = useState<CompanyInfoResponse["data"] | null>(null);
   // 获取用户信息
@@ -54,7 +54,7 @@ const Profile: React.FC = () => {
           const res = await getStudentInfoApi();
           if (res.code === 200) setStudentInfo(res.data);
           else throw new Error();
-        } else if(role === "company") {
+        } else if (role === "company") {
           const res = await getCompanyInfoApi();
           if (res.code === 200) setCompanyInfo(res.data);
           else throw new Error();
@@ -71,11 +71,11 @@ const Profile: React.FC = () => {
   const onChangePassword = async (values: any) => {
     try {
       let api;
-      if(role==="student"){
+      if (role === "student") {
         api = studentChangePasswordApi;
-      }else if(role==="company"){
+      } else if (role === "company") {
         api = companyChangePasswordApi;
-      }else{
+      } else {
         api = adminChangePasswordApi;
       }
       const res = await api({password: values.newPwd});
@@ -139,7 +139,7 @@ const Profile: React.FC = () => {
                         );
                       }
                       // 更新 Home 全局 user
-                      updateAvatar(newUrl);
+                      updateUser({avatar_url: newUrl,});
                       message.success("头像上传成功");
                     } else {
                       message.error(response?.message || "上传失败");

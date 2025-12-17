@@ -10,6 +10,8 @@ import Attendance from "@/pages/Attendance/Attendance.tsx";
 import Complaint from "@/pages/Complaint/Complaint.tsx";
 import Statistics from "@/pages/Statistics/Statistics.tsx";
 import Profile from "@/pages/Profile/Profile.tsx";
+import Verify from "@/pages/Verify/Verify.tsx";
+import HomeRedirect from "@/router/HomeRedirect.tsx";
 
 export const routes: RouteObject[] = [
   {
@@ -24,7 +26,8 @@ export const routes: RouteObject[] = [
     path: "/home",
     element: <MainLayout/>,
     children: [
-      {index: true, element: <Navigate to="/home/part-time"/>},
+      {index: true, element: <HomeRedirect/>}, // 根据用户角色跳转到默认首页
+      {path: "verify", element: <Verify/>}, //企业认证审核
       {path: "part-time", element: <PartTime/>}, //兼职信息管理
       {path: "match", element: <Match/>}, //智能匹配
       {path: "salary", element: <Salary/>}, //薪资担保

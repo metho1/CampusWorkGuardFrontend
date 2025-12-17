@@ -26,6 +26,7 @@ export interface LoginRegisterResponse {
     message: string;
     data: {
         token: string;
+        role: "student" | "company" | "admin";
     };
 }
 

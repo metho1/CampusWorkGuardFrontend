@@ -24,10 +24,13 @@ import {
 import SchoolDebounceSelect from "@/components/SchoolDebounceSelect.tsx";
 import SendCodeButton from "@/components/SendCodeButton.tsx";
 import {useNavigate, useSearchParams} from "react-router-dom";
+import {useUserStore} from "@/stores/userStore.ts";
 
 const {TabPane} = Tabs;
 
 const LoginForm: React.FC = () => {
+  const {setUser} = useUserStore();
+  // 路由导航
   const navigate = useNavigate();
   // 当前 tab：jobSeeker / employer / admin
   const [activeTab, setActiveTab] = useState("jobSeeker");
@@ -105,9 +108,12 @@ const LoginForm: React.FC = () => {
       }
       // 统一处理响应结果
       if (res.code === 200) {
-        const token = res.data?.token;
+        const {token,role} = res.data || {};
         if (token) {
           localStorage.setItem("token", token);
+        }
+        if(role){
+          setUser({role});
         }
         message.success(mode.includes("register") ? "注册成功" : "登录成功");
         navigate("/home"); // 跳转
