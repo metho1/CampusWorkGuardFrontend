@@ -43,7 +43,7 @@ const MainLayout: React.FC = () => {
       key: "/home/match",
       icon: <DeploymentUnitOutlined/>,
       label: "智能匹配",
-      roles: ["student", "company"],
+      roles: ["student"],
     },
     {
       key: "/home/salary",

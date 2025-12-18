@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag} from "antd";
 import type {DefaultOptionType} from "antd/es/cascader";
-import {PlusOutlined} from "@ant-design/icons";
+import {FilterOutlined, PlusOutlined} from "@ant-design/icons";
 import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
@@ -17,47 +17,10 @@ import {
   updateJobApi
 } from "@/api/job";
 import {useUserStore} from "@/stores/userStore.ts";
+import {experiences, jobTypes, majors, salaryPeriods, salaryUnits, workShifts} from "@/types/job.ts";
 
 const {TextArea} = Input;
 
-// 岗位类型单选: 兼职、实习、全职（兼岗）
-const jobTypes = [
-  {label: "兼职", value: "part-time"},
-  {label: "实习", value: "intern"},
-  {label: "全职", value: "full-time"},
-];
-// 薪资单位单选: 元/小时、元/天、元/月
-const salaryUnits = [
-  {label: "元/小时", value: "hour"},
-  {label: "元/天", value: "day"},
-  {label: "元/月", value: "month"},
-];
-// 薪资发放周期单选: 按天、按周、按月
-const salaryPeriods = [
-  {label: "按天", value: "day"},
-  {label: "按周", value: "week"},
-  {label: "按月", value: "month"},
-];
-// 专业要求多选: 不限专业、计算机类、设计类、金融类
-const majors = [
-  {label: "不限专业", value: "any"},
-  {label: "计算机类", value: "cs"},
-  {label: "设计类", value: "design"},
-  {label: "金融类", value: "finance"},
-];
-// 工作时段单选: 白班、夜班、轮班
-const workShifts = [
-  {label: "白班", value: "day"},
-  {label: "夜班", value: "night"},
-  {label: "轮班", value: "shift"},
-];
-// 经验要求单选: 无经验、1年以内、1-3年、3年以上
-const experiences = [
-  {label: "无经验", value: "none"},
-  {label: "1年以内", value: "<1"},
-  {label: "1-3年", value: "1-3"},
-  {label: "3年以上", value: ">3"},
-];
 // 违规关键词列表（前端检测）: 阻止提交并提示用户修改
 const forbiddenKeywords = [
   "高佣金",
@@ -69,10 +32,6 @@ const forbiddenKeywords = [
   "兼职刷单",
 ];
 
-/**
- * PartTime 页面 — 兼职信息发布（UI）
- * 说明：此组件为 UI 实现，提交逻辑（调用后端）请在 onFinish 中实现。
- */
 const PartTime: React.FC = () => {
   const {user} = useUserStore();
   const isAdmin = user?.role === "admin";
@@ -364,6 +323,25 @@ const PartTime: React.FC = () => {
       major: values.major,
       region: values.region.toString(), // 处理省 / 市 / 区（Cascader 返回的是数组)
       // 如： ["420000", "420100", "420111"]  转成 "420000,420100,420111"
+      regionName: values.region
+        .map((code: string) => {
+          // 根据 code 找到对应的 name
+          let name = "";
+          const findName = (options: DefaultOptionType[]) => {
+            for (const option of options) {
+              if (option.value === code) {
+                name = option.label as string;
+                return;
+              }
+              if (option.children) {
+                findName(option.children);
+              }
+            }
+          };
+          findName(regionOptions);
+          return name;
+        })
+        .join(""),
       address: values.address,
       shift: values.shift,
       experience: values.experience,
@@ -401,13 +379,38 @@ const PartTime: React.FC = () => {
       <SectionCard
         searchPlaceholder={isAdmin ? "搜索企业名称" : "搜索岗位名称"}
         searchValue={search}
-        statusValue={status}
-        typeValue={type}
         onSearchChange={setSearch}
-        onStatusChange={setStatus}
-        onTypeChange={setType}
         onFilter={() => fetchJobList(1)}
         loading={loading}
+        filters={
+          <>
+            <Select
+              style={{width: 120}}
+              value={status}
+              onChange={setStatus}
+              options={[
+                {label: "所有状态", value: ""},
+                {label: "审核中", value: "pending"},
+                {label: "已通过", value: "approved"},
+                {label: "已驳回", value: "rejected"},
+              ]}
+            />
+            <Select
+              style={{width: 120}}
+              value={type}
+              onChange={setType}
+              options={[
+                {label: "所有类型", value: ""},
+                {label: "兼职", value: "part-time"},
+                {label: "实习", value: "intern"},
+                {label: "全职", value: "full-time"},
+              ]}
+            />
+            <Button icon={<FilterOutlined/>} onClick={() => fetchJobList(1)}>
+              筛选
+            </Button>
+          </>
+        }
         columns={[
           ...(isAdmin
             ? [{title: "企业名称", dataIndex: "company"}]
@@ -481,7 +484,6 @@ const PartTime: React.FC = () => {
           overflowY: 'auto',
           paddingRight: 12,
         }}
-        className={styles.modal}
       >
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Row gutter={16}>
