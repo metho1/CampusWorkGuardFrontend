@@ -1,7 +1,7 @@
 // src/pages/Match/Match.tsx
 import React, {useEffect, useState} from "react";
 import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag} from "antd";
-import {ArrowDownOutlined, ArrowUpOutlined} from "@ant-design/icons";
+import {FilterOutlined} from "@ant-design/icons";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import SectionCard from "@/components/SectionCard/SectionCard";
 import {getJobDetailApi, studentGetJobListApi} from "@/api/job";
@@ -89,7 +89,7 @@ const Match: React.FC = () => {
   // ===== 筛选条件 =====
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState("");
-  const [major, setMajor] = useState("");
+  const [major, setMajor] = useState("ANY");
   const [salaryOrder, setSalaryOrder] = useState<"" | "ASC" | "DESC">("");
   // ===== 分页 =====
   const [page, setPage] = useState(1);
@@ -123,6 +123,24 @@ const Match: React.FC = () => {
     fetchList(1);
   }, []);
 
+  // 加载省份数据
+  useEffect(() => {
+    loadProvinces();
+  }, []);
+
+  const loadProvinces = async () => {
+    const res = await fetchLocationApi(""); // keywords 为空，返回全国省份
+    if (res.code === 200) {
+      setRegionOptions(
+        res.data.districts.map((p) => ({
+          label: p.name,
+          value: p.adcode,
+          isLeaf: false,
+        }))
+      );
+    }
+  };
+
   // 加载省/市/区的子级数据
   const loadRegionData = async (selectedOptions: any[]) => {
     const target = selectedOptions[selectedOptions.length - 1];
@@ -143,7 +161,7 @@ const Match: React.FC = () => {
 
     setRegionOptions([...regionOptions]);
   };
-  // 回填省市区（编辑时使用）
+  // 回填省市区
   const fillRegionForEdit = async (regionStr: string) => {
     const codes = regionStr.split(",");
     // 加载省
@@ -223,6 +241,38 @@ const Match: React.FC = () => {
         onSearchChange={setSearch}
         onFilter={() => fetchList(1)}
         loading={loading}
+        filters={
+          <>
+            <Cascader
+              options={regionOptions}
+              loadData={loadRegionData}
+              placeholder="请选择省 / 市 / 区"
+              style={{width: "100%"}}
+              onChange={(value) => {
+                setRegion(value?.length === 3 ? value.join(",") : "");
+              }}
+            />
+            <Select
+              style={{width: 120}}
+              value={major}
+              onChange={setMajor}
+              options={majors}
+            />
+            <Select
+              style={{width: 120}}
+              value={salaryOrder}
+              onChange={setSalaryOrder}
+              options={[
+                {label: "默认排序", value: ""},
+                {label: "薪资升序", value: "DESC"},
+                {label: "薪资降序", value: "ASC"},
+              ]}
+            />
+            <Button icon={<FilterOutlined/>} onClick={() => fetchList(1)}>
+              筛选
+            </Button>
+          </>
+        }
         columns={[
           {title: "企业名称", dataIndex: "company"},
           {title: "岗位名称", dataIndex: "name"},
@@ -242,7 +292,7 @@ const Match: React.FC = () => {
               return `${row.salary} ${map[row.salaryUnit] || ""}`;
             },
           },
-          {title: "工作地点", dataIndex: "region"},
+          {title: "工作地点", dataIndex: "regionName"},
           {title: "专业要求", dataIndex: "major", render: (v: string) => majorMap[v] || "-"},
           {
             title: "操作",
@@ -259,43 +309,6 @@ const Match: React.FC = () => {
           onChange: fetchList,
         }}
       />
-
-      {/* ===== 额外筛选控件（城市 / 专业 / 薪资排序）===== */}
-      <Space style={{marginTop: 12}}>
-        <Select
-          placeholder="选择城市"
-          value={region}
-          onChange={setRegion}
-          style={{width: 140}}
-        />
-        <Select
-          placeholder="选择专业"
-          value={major}
-          onChange={setMajor}
-          options={majors}
-          style={{width: 140}}
-        />
-        <Button
-          icon={<ArrowUpOutlined/>}
-          type={salaryOrder === "ASC" ? "primary" : "default"}
-          onClick={() => setSalaryOrder("ASC")}
-        >
-          薪资升序
-        </Button>
-        <Button
-          icon={<ArrowDownOutlined/>}
-          type={salaryOrder === "DESC" ? "primary" : "default"}
-          onClick={() => setSalaryOrder("DESC")}
-        >
-          薪资降序
-        </Button>
-        <Button onClick={() => {
-          setSalaryOrder("");
-          fetchList(1);
-        }}>
-          清除排序
-        </Button>
-      </Space>
 
       {/* ===== 岗位详情 Modal（只读）===== */}
       <Modal
@@ -344,7 +357,8 @@ const Match: React.FC = () => {
             </Col>
 
             <Col span={12}>
-              <Form.Item name="salaryPeriod" label="薪资发放周期" rules={[{required: true, message: "请选择发放周期"}]}>
+              <Form.Item name="salaryPeriod" label="薪资发放周期"
+                         rules={[{required: true, message: "请选择发放周期"}]}>
                 <Select placeholder="请选择发放周期" options={salaryPeriods} disabled/>
               </Form.Item>
             </Col>

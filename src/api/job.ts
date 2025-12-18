@@ -12,6 +12,7 @@ export interface createJobParams {
   headcount: number; //招聘人数
   major: string; // 专业要求
   region: string; // 工作地点
+  regionName: string; // 工作地点名称
   address: string; // 详细地址
   shift: string; // 工作时段
   experience: string; // 经验要求
@@ -137,7 +138,7 @@ export const auditJobApi = (data: auditJobParams) => {
 // 学生 获取/筛选 工作岗位列表接口的请求参数
 export interface studentGetJobListParams {
   search: string; // 搜索岗位名称
-  region: string; // 工作地点(城市)
+  region: string; // 工作地点
   major: string; // 专业要求
   salaryOrder: string; // 薪资排序 ASC/DESC/空
   page: number; // 页码，从1开始
@@ -157,7 +158,7 @@ export interface studentGetJobListResponse {
       type: string; // 岗位类型
       salary: number; // 薪资标准
       salaryUnit: string; //薪资单位
-      region: string; // 工作地点
+      regionName: string; // 工作地点名称
       major: string; // 专业要求
     }>;
   };

@@ -385,6 +385,25 @@ const PartTime: React.FC = () => {
       major: values.major,
       region: values.region.toString(), // 处理省 / 市 / 区（Cascader 返回的是数组)
       // 如： ["420000", "420100", "420111"]  转成 "420000,420100,420111"
+      regionName: values.region
+        .map((code: string) => {
+          // 根据 code 找到对应的 name
+          let name = "";
+          const findName = (options: DefaultOptionType[]) => {
+            for (const option of options) {
+              if (option.value === code) {
+                name = option.label as string;
+                return;
+              }
+              if (option.children) {
+                findName(option.children);
+              }
+            }
+          };
+          findName(regionOptions);
+          return name;
+        })
+        .join(""),
       address: values.address,
       shift: values.shift,
       experience: values.experience,
