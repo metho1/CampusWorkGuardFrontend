@@ -133,3 +133,37 @@ export interface auditJobParams {
 export const auditJobApi = (data: auditJobParams) => {
   return request.post<createJobResponse>("/admin_user/review_job", data);
 };
+
+// 学生 获取/筛选 工作岗位列表接口的请求参数
+export interface studentGetJobListParams {
+  search: string; // 搜索岗位名称
+  region: string; // 工作地点(城市)
+  major: string; // 专业要求
+  salaryOrder: string; // 薪资排序 ASC/DESC/空
+  page: number; // 页码，从1开始
+  pageSize: number; // 每页数量
+}
+
+// 学生 获取/筛选 工作岗位列表接口的响应结果
+export interface studentGetJobListResponse {
+  code: number;
+  message: string;
+  data: {
+    total: number; // 总岗位数
+    jobs: Array<{
+      id: number; // 岗位ID
+      company: string; // 企业名称
+      name: string; // 岗位名称
+      type: string; // 岗位类型
+      salary: number; // 薪资标准
+      salaryUnit: string; //薪资单位
+      region: string; // 工作地点
+      major: string; // 专业要求
+    }>;
+  };
+}
+
+// 学生 获取/筛选 工作岗位列表接口
+export const studentGetJobListApi = (data: studentGetJobListParams) => {
+  return request.post<studentGetJobListResponse>("/student_user/job_match_list", data);
+};

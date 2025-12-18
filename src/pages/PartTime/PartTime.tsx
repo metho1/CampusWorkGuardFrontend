@@ -38,7 +38,7 @@ const salaryPeriods = [
   {label: "按周", value: "week"},
   {label: "按月", value: "month"},
 ];
-// 专业要求单选: 不限专业、计算机类、设计类、金融类
+// 专业要求单选
 const majors = [
   {label: "不限专业", value: "ANY"},
   {label: "计算机类", value: "CS"},
@@ -94,10 +94,6 @@ const forbiddenKeywords = [
   "兼职刷单",
 ];
 
-/**
- * PartTime 页面 — 兼职信息发布（UI）
- * 说明：此组件为 UI 实现，提交逻辑（调用后端）请在 onFinish 中实现。
- */
 const PartTime: React.FC = () => {
   const {user} = useUserStore();
   const isAdmin = user?.role === "admin";
@@ -531,7 +527,6 @@ const PartTime: React.FC = () => {
           overflowY: 'auto',
           paddingRight: 12,
         }}
-        className={styles.modal}
       >
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Row gutter={16}>
