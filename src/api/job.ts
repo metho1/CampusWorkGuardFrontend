@@ -168,3 +168,10 @@ export interface studentGetJobListResponse {
 export const studentGetJobListApi = (data: studentGetJobListParams) => {
   return request.post<studentGetJobListResponse>("/student_user/job_match_list", data);
 };
+
+// 学生申请某个岗位接口
+export const applyJobApi = (id: number) => {
+  return request.get<createJobResponse>("/student_user/apply_job", {
+    params: {id},
+  });
+};

@@ -4,7 +4,7 @@ import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Se
 import {FilterOutlined} from "@ant-design/icons";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import SectionCard from "@/components/SectionCard/SectionCard";
-import {getJobDetailApi, studentGetJobListApi} from "@/api/job";
+import {applyJobApi, getJobDetailApi, studentGetJobListApi} from "@/api/job";
 import type {DefaultOptionType} from "antd/es/cascader";
 import {fetchLocationApi} from "@/api/location";
 import styles from "@/pages/PartTime/partTime.module.css";
@@ -23,6 +23,8 @@ const Match: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  // 当前查看 / 申请的岗位 id
+  const [currentJobId, setCurrentJobId] = useState<number | null>(null);
   // ===== 筛选条件 =====
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState("");
@@ -133,9 +135,17 @@ const Match: React.FC = () => {
     form.setFieldValue("region", codes);
   };
 
+  // 关闭 Modal 时重置表单
+  const handleClose = () => {
+    setOpen(false);
+    setCurrentJobId(null);
+    form.resetFields();
+  };
+
   // ===== 查看详情 =====
   const handleView = async (id: number) => {
     try {
+      setCurrentJobId(id); // 保存当前岗位 id
       setOpen(true);
       const res = await getJobDetailApi(id);
       if (res.code === 200) {
@@ -159,6 +169,22 @@ const Match: React.FC = () => {
       }
     } catch {
       message.error("获取岗位详情失败");
+    }
+  };
+
+  // ===== 申请岗位 =====
+  const handleApply = async (id:number) => {
+    try {
+      const res = await applyJobApi(id);
+      if (res.code === 200) {
+        message.success("岗位申请成功");
+        handleClose();
+        await fetchList(page);
+      } else {
+        message.error(res.message);
+      }
+    } catch {
+      message.error("申请失败");
     }
   };
 
@@ -249,7 +275,7 @@ const Match: React.FC = () => {
       <Modal
         title="岗位详情"
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={handleClose}
         footer={null} // 使用表单内按钮替代默认按钮
         mask={{blur: false}} // 遮罩效果
         width={700}
@@ -371,7 +397,8 @@ const Match: React.FC = () => {
 
           <Form.Item>
             <div className={styles.footer}>
-              <Button onClick={() => setOpen(false)}>取消</Button>
+              <Button onClick={handleClose}>取消</Button>
+              <Button type="primary" onClick={()=>handleApply(currentJobId!)}>申请</Button>
             </div>
           </Form.Item>
         </Form>
