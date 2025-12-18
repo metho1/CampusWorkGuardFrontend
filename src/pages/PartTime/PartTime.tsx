@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from "react";
 import {Button, Cascader, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Tag} from "antd";
 import type {DefaultOptionType} from "antd/es/cascader";
-import {PlusOutlined,FilterOutlined} from "@ant-design/icons";
+import {FilterOutlined, PlusOutlined} from "@ant-design/icons";
 import styles from "./partTime.module.css";
 import {fetchLocationApi} from "@/api/location";
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
@@ -17,72 +17,10 @@ import {
   updateJobApi
 } from "@/api/job";
 import {useUserStore} from "@/stores/userStore.ts";
+import {experiences, jobTypes, majors, salaryPeriods, salaryUnits, workShifts} from "@/types/job.ts";
 
 const {TextArea} = Input;
 
-// 岗位类型单选: 兼职、实习、全职（兼岗）
-const jobTypes = [
-  {label: "兼职", value: "part-time"},
-  {label: "实习", value: "intern"},
-  {label: "全职", value: "full-time"},
-];
-// 薪资单位单选: 元/小时、元/天、元/月
-const salaryUnits = [
-  {label: "元/小时", value: "hour"},
-  {label: "元/天", value: "day"},
-  {label: "元/月", value: "month"},
-];
-// 薪资发放周期单选: 按天、按周、按月
-const salaryPeriods = [
-  {label: "按天", value: "day"},
-  {label: "按周", value: "week"},
-  {label: "按月", value: "month"},
-];
-// 专业要求单选
-const majors = [
-  {label: "不限专业", value: "ANY"},
-  {label: "计算机类", value: "CS"},
-  {label: "电子信息类", value: "EI"},
-  {label: "机械类", value: "ME"},
-  {label: "土木类", value: "CE"},
-  {label: "自动化类", value: "AU"},
-  {label: "电气类", value: "EE"},
-  {label: "化工与制药类", value: "CEP"},
-  {label: "材料类", value: "MT"},
-  {label: "数学类", value: "MA"},
-  {label: "物理类", value: "PH"},
-  {label: "化学类", value: "CH"},
-  {label: "生物科学类", value: "BS"},
-  {label: "工商管理类", value: "BA"},
-  {label: "经济学类", value: "EC"},
-  {label: "金融学类", value: "FN"},
-  {label: "会计学类", value: "AC"},
-  {label: "中国语言文学类", value: "CL"},
-  {label: "新闻传播学类", value: "JC"},
-  {label: "历史学类", value: "HS"},
-  {label: "法学类", value: "LW"},
-  {label: "临床医学类", value: "CM"},
-  {label: "护理学类", value: "NS"},
-  {label: "药学类", value: "PHAR"},
-  {label: "农学类", value: "AG"},
-  {label: "林学类", value: "FO"},
-  {label: "美术学类", value: "FA"},
-  {label: "音乐与舞蹈学类", value: "MD"},
-  {label: "戏剧与影视学类", value: "TF"}
-];
-// 工作时段单选: 白班、夜班、轮班
-const workShifts = [
-  {label: "白班", value: "day"},
-  {label: "夜班", value: "night"},
-  {label: "轮班", value: "shift"},
-];
-// 经验要求单选: 无经验、1年以内、1-3年、3年以上
-const experiences = [
-  {label: "无经验", value: "none"},
-  {label: "1年以内", value: "<1"},
-  {label: "1-3年", value: "1-3"},
-  {label: "3年以上", value: ">3"},
-];
 // 违规关键词列表（前端检测）: 阻止提交并提示用户修改
 const forbiddenKeywords = [
   "高佣金",
@@ -447,28 +385,28 @@ const PartTime: React.FC = () => {
         filters={
           <>
             <Select
-              style={{ width: 120 }}
+              style={{width: 120}}
               value={status}
               onChange={setStatus}
               options={[
-                { label: "所有状态", value: "" },
-                { label: "审核中", value: "pending" },
-                { label: "已通过", value: "approved" },
-                { label: "已驳回", value: "rejected" },
+                {label: "所有状态", value: ""},
+                {label: "审核中", value: "pending"},
+                {label: "已通过", value: "approved"},
+                {label: "已驳回", value: "rejected"},
               ]}
             />
             <Select
-              style={{ width: 120 }}
+              style={{width: 120}}
               value={type}
               onChange={setType}
               options={[
-                { label: "所有类型", value: "" },
-                { label: "兼职", value: "part-time" },
-                { label: "实习", value: "intern" },
-                { label: "全职", value: "full-time" },
+                {label: "所有类型", value: ""},
+                {label: "兼职", value: "part-time"},
+                {label: "实习", value: "intern"},
+                {label: "全职", value: "full-time"},
               ]}
             />
-            <Button icon={<FilterOutlined />} onClick={() => fetchJobList(1)}>
+            <Button icon={<FilterOutlined/>} onClick={() => fetchJobList(1)}>
               筛选
             </Button>
           </>
