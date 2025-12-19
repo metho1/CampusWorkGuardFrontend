@@ -8,15 +8,9 @@ import {applyJobApi, getJobDetailApi, studentGetJobListApi} from "@/api/job";
 import type {DefaultOptionType} from "antd/es/cascader";
 import {fetchLocationApi} from "@/api/location";
 import styles from "@/pages/PartTime/partTime.module.css";
-import {experiences, jobTypes, majors, salaryPeriods, salaryUnits, workShifts} from "@/types/job.ts";
+import {experiences, jobTypes, majors, salaryPeriods, salaryUnits, workShifts,majorMap} from "@/types/job.ts";
 
 const {TextArea} = Input;
-
-// 专业映射表
-const majorMap: Record<string, string> = majors.reduce((map, item) => {
-  map[item.value] = item.label;
-  return map;
-}, {} as Record<string, string>);
 
 const Match: React.FC = () => {
   // ===== 列表状态 =====
