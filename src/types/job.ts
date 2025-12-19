@@ -14,10 +14,9 @@ export const salaryUnits = [
   {label: "元/月", value: "month"},
 ];
 
-// 薪资发放周期单选: 按天、按周、按月
+// 薪资发放周期单选: 按天、按月
 export const salaryPeriods = [
   {label: "按天", value: "day"},
-  {label: "按周", value: "week"},
   {label: "按月", value: "month"},
 ];
 
@@ -68,3 +67,9 @@ export const majors = [
   {label: "音乐与舞蹈学类", value: "MD"},
   {label: "戏剧与影视学类", value: "TF"}
 ];
+
+// 专业映射表
+export const majorMap: Record<string, string> = majors.reduce((map, item) => {
+  map[item.value] = item.label;
+  return map;
+}, {} as Record<string, string>);

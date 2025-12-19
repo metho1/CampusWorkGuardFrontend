@@ -8,6 +8,21 @@
   align-items: center;
 }
 
+/* 岗位统计图表容器 */
+.jobCharts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* 屏幕宽度较小时，改为纵向排列 */
+@media (max-width: 1200px) {
+  .jobCharts {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 /*操作*/
 a{
   color: #1890ff;
