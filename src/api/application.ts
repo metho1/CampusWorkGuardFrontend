@@ -57,5 +57,5 @@ export interface payDepositResponse {
 
 // 企业 缴纳保障金、支付剩余薪资 接口
 export const payDepositApi = (data: payDepositParams) => {
-  return request.post<payDepositResponse>("/admin_user/pay_deposit", data);
+  return request.post<payDepositResponse>("/company_user/pay_deposit", data);
 };
