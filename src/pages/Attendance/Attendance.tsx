@@ -7,7 +7,8 @@ import {
   attendApi,
   getApplicationListApi,
   getAttendanceCalendarApi,
-  studentGetApplicationListApi
+  studentGetApplicationListApi,
+  endJobApi
 } from "@/api/application";
 import {FilterOutlined} from "@ant-design/icons";
 import {majorMap} from "@/types/job.ts";
@@ -96,6 +97,24 @@ const Attendance: React.FC = () => {
     } else {
       message.error("获取打卡记录失败");
     }
+  };
+
+  const handleFinish = (jobApplicationId: number) => {
+    Modal.confirm({
+      title: `确认结束工作？`,
+      content: `结束工作后，学生将无法继续打卡，请确认无误后继续。`,
+      okText: "确认结束",
+      cancelText: "取消",
+      async onOk() {
+        const res = await endJobApi(jobApplicationId);
+        if (res.code === 200) {
+          message.success("工作已结束");
+          await fetchApplicationList(page);
+        } else {
+          message.error(res.message || "结束工作失败");
+        }
+      },
+    });
   };
 
   return (

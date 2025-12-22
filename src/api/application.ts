@@ -71,7 +71,7 @@ export interface AttendParams {
   location: string;
 }
 
-// 学生打卡接口的响应结果
+// 学生打卡、企业结束工作 接口的响应结果
 export interface AttendResponse {
   code: number;
   message: string;
@@ -105,3 +105,11 @@ export const getAttendanceCalendarApi = (jobApplicationId: number) => {
     `/student_user/get_attendance_list?jobApplicationId=${jobApplicationId}`
   );
 };
+
+// 企业结束工作接口
+export const endJobApi = (jobApplicationId: number) => {
+  return request.get<AttendResponse>(
+    `/company_user/finish_job?jobApplicationId=${jobApplicationId}`
+  );
+};
+
