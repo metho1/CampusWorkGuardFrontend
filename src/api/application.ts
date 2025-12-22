@@ -64,3 +64,44 @@ export interface payDepositResponse {
 export const payDepositApi = (data: payDepositParams) => {
   return request.post<payDepositResponse>("/company_user/pay_deposit", data);
 };
+
+// 学生打卡接口的请求参数
+export interface AttendParams {
+  jobApplicationId: number;
+  location: string;
+}
+
+// 学生打卡接口的响应结果
+export interface AttendResponse {
+  code: number;
+  message: string;
+  data: null;
+}
+
+// 学生打卡接口
+export const attendApi = (data: AttendParams) => {
+  return request.post<AttendResponse>(
+    "/student_user/attendance",
+    data
+  );
+};
+
+// 获取学生考勤日历接口的单个考勤项
+export interface AttendanceCalendarItem {
+  attendance_date: string; // YYYY-MM-DD
+  location: string;        // 已反解析后的地点
+}
+
+// 获取学生考勤日历接口的响应结果
+export interface AttendanceCalendarResponse {
+  code: number;
+  message: string;
+  data: AttendanceCalendarItem[];
+}
+
+// 获取学生考勤日历接口
+export const getAttendanceCalendarApi = (jobApplicationId: number) => {
+  return request.get<AttendanceCalendarResponse>(
+    `/student_user/get_attendance_list?jobApplicationId=${jobApplicationId}`
+  );
+};

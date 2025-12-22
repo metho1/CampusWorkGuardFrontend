@@ -1,14 +1,30 @@
 // src/pages/Attendance/Attendance.tsx
 import React, {useEffect, useState} from "react";
-import {Button, message, Modal, Select, Tag} from "antd";
+import {Button, Calendar, message, Modal, Select, Tag,ConfigProvider} from "antd";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import SectionCard from "@/components/SectionCard/SectionCard";
-import {getApplicationListApi, payDepositApi, studentGetApplicationListApi} from "@/api/application";
+import {
+  attendApi,
+  getApplicationListApi,
+  getAttendanceCalendarApi,
+  studentGetApplicationListApi
+} from "@/api/application";
 import {FilterOutlined} from "@ant-design/icons";
 import {majorMap} from "@/types/job.ts";
 import {useUserStore} from "@/stores/userStore.ts";
+import dayjs from "dayjs";
+import zhCN from "antd/locale/zh_CN";
+import { Tooltip } from "antd";
+
+interface AttendanceRecord {
+  attendance_date: string;
+  location: string;
+}
 
 const Attendance: React.FC = () => {
+  // 日历弹窗状态
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const {user} = useUserStore();
   const isStudent = user?.role === "student";
   // 列表数据
@@ -48,27 +64,38 @@ const Attendance: React.FC = () => {
     fetchApplicationList(1);
   }, []);
 
-  // 缴纳担保金 / 支付薪资
-  const handlePay = (jobId: number, deposit: number, status: string) => {
-    const text = status === "unpaid" ? "缴纳担保金" : "支付薪资";
-    Modal.confirm({
-      title: `确认${text}？`,
-      content: `本次操作将${text} ￥${deposit}, 请确认无误后继续。`,
-      okText: "确认支付",
-      cancelText: "取消",
-      async onOk() {
-        const res = await payDepositApi({
-          jobId,
-          deposit,
+  const handleAttend = async (jobApplicationId: number) => {
+    if (!navigator.geolocation) {
+      message.error("浏览器不支持定位");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const location = `${pos.coords.longitude},${pos.coords.latitude}`;
+        const res = await attendApi({
+          jobApplicationId,
+          location,
         });
         if (res.code === 200) {
-          message.success("支付成功");
-          await fetchApplicationList(page);
+          message.success("打卡成功");
         } else {
-          message.error(res.message || "支付失败");
+          message.error(res.message || "打卡失败");
         }
       },
-    });
+      () => {
+        message.error("获取定位失败，请检查浏览器权限");
+      }
+    );
+  };
+
+  const handleViewAttendance = async (jobApplicationId: number) => {
+    setCalendarOpen(true);
+    const res = await getAttendanceCalendarApi(jobApplicationId);
+    if (res.code === 200) {
+      setAttendanceRecords(res.data);
+    } else {
+      message.error("获取打卡记录失败");
+    }
   };
 
   return (
@@ -77,6 +104,33 @@ const Attendance: React.FC = () => {
         title="考勤与工作记录"
         desc="记录学生的考勤情况与工作完成情况"
       />
+
+      <Modal
+        title="打卡记录"
+        open={calendarOpen}
+        footer={null}
+        onCancel={() => setCalendarOpen(false)}
+      >
+        <ConfigProvider locale={zhCN}>
+          <Calendar
+            fullscreen={false}
+            dateCellRender={(date) => {
+              const formatted = dayjs(date).format("YYYY-MM-DD");
+              const record = attendanceRecords.find(
+                item => item.attendance_date === formatted
+              );
+              if (record) {
+                return (
+                  <Tooltip title={record.location}>
+                    <Tag color="green">已打卡</Tag>
+                  </Tooltip>
+                );
+              }
+              return null;
+            }}
+          />
+        </ConfigProvider>
+      </Modal>
 
       <SectionCard
         searchPlaceholder={isStudent ? "搜索企业名称" : "搜索岗位名称"}
@@ -138,22 +192,22 @@ const Attendance: React.FC = () => {
               isStudent ? (
                 <>
                   {row.status === "ongoing" && (
-                    <Button type="link" onClick={() => handlePay(row.id, row.total, row.status)}>
+                    <Button type="link" onClick={() => handleAttend(row.id)}>
                       打卡
                     </Button>
                   )}
-                  <Button type="link" onClick={() => handlePay(row.id, row.total, row.status)}>
+                  <Button type="link" onClick={() => handleViewAttendance(row.id)}>
                     查看
                   </Button>
                 </>
               ) : (
                 <>
                   {row.status === "ongoing" && (
-                    <Button type="link" onClick={() => handlePay(row.id, row.total, row.status)}>
+                    <Button type="link" onClick={() => handleFinish(row.id)}>
                       结束
                     </Button>
                   )}
-                  <Button type="link" onClick={() => handlePay(row.id, row.total, row.status)}>
+                  <Button type="link" onClick={() => handleViewAttendance(row.id)}>
                     查看
                   </Button>
                 </>
