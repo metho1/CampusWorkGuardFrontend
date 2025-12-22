@@ -1,53 +1,15 @@
 // src/pages/Statistics/Statistics.tsx
-import React, {useState} from "react";
-import {Button, Card, DatePicker, Select, Space, Table, Tabs} from "antd";
+import React, {useEffect, useState} from "react";
+import {getJobTypeStatApi, getMajorJobTopApi, getMajorSalaryStatApi} from "@/api/statistics";
+import {Button, Card, message, Space, Table, Tabs} from "antd";
 import {DownloadOutlined} from "@ant-design/icons";
-import {
-  Bar,
-  BarChart,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
-import {majors} from "@/types/job.ts";
+import {Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {jobTypeMap, majorMap} from "@/types/job";
+
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import styles from "@/pages/statistics/statistics.module.css";
 
-const {RangePicker} = DatePicker;
-
-/** =====================
- * 模拟数据（后续由后端替换）
- * ===================== */
-
-/** 各专业岗位数 Top5 */
-const majorJobTop5Data = [
-  {major: "计算机科学", value: 160},
-  {major: "软件工程", value: 140},
-  {major: "信息管理", value: 110},
-  {major: "电子信息", value: 95},
-  {major: "人工智能", value: 80},
-];
-
-/** 各专业平均薪资排名 */
-const majorSalaryData = [
-  {major: "人工智能", salary: 180},
-  {major: "计算机科学", salary: 165},
-  {major: "软件工程", salary: 155},
-  {major: "电子信息", salary: 145},
-  {major: "信息管理", salary: 130},
-];
-
-const jobTypeData = [
-  {type: "兼职", value: 120},
-  {type: "实习", value: 80},
-  {type: "全职", value: 40},
-];
-
+// 投诉类型占比
 const complaintData = [
   {type: "拖欠薪资", value: 12},
   {type: "虚假招聘", value: 6},
@@ -75,26 +37,52 @@ const SALARY_BAR_COLORS = [
   "#efdbff",
 ];
 
-/** =====================
- * 主组件
- * ===================== */
-const Statistics: React.FC = () => {
-  const [major, setMajor] = useState<string>("ANY");
 
-  const filters = (
-    <>
-      <RangePicker/>
-      <Space>
-        <Select
-          style={{width: 120}}
-          value={major}
-          onChange={setMajor}
-          options={majors}
-        />
-        <Button type="primary">筛选</Button>
-      </Space>
-    </>
-  );
+const Statistics: React.FC = () => {
+
+  const [jobTypeData, setJobTypeData] = useState<any[]>([]);
+  const [majorJobTop5Data, setMajorJobTop5Data] = useState<any[]>([]);
+  const [majorSalaryData, setMajorSalaryData] = useState<any[]>([]);
+  // const [complaintData, setComplaintData] = useState<any[]>([]);
+
+  const fetchStatistics = async () => {
+    try {
+      const majorJobRes = await getMajorJobTopApi();
+      if (majorJobRes.code === 200) {
+        const formattedData = majorJobRes.data.map(item => ({
+          ...item,
+          major: majorMap[item.major] || item.major,
+        }));
+        setMajorJobTop5Data(formattedData);
+      }
+      const jobTypeRes = await getJobTypeStatApi();
+      if (jobTypeRes.code === 200) {
+        const formattedData = jobTypeRes.data.map(item => ({
+          ...item,
+          type: jobTypeMap[item.type] || item.type,
+        }));
+        setJobTypeData(formattedData);
+      }
+      const majorSalaryRes = await getMajorSalaryStatApi();
+      if (majorSalaryRes.code === 200) {
+        const formattedData = majorSalaryRes.data.map(item => ({
+          ...item,
+          major: majorMap[item.major] || item.major,
+        }));
+        setMajorSalaryData(formattedData);
+      }
+      // const complaintRes =  await getComplaintStatApi();
+      // if (complaintRes.code === 200) {
+      //   setComplaintData(complaintRes.data);
+      // }
+    } catch {
+      message.error("数据加载失败");
+    }
+  };
+
+  useEffect(() => {
+    fetchStatistics();
+  }, []);
 
   const tabs = [
     {
@@ -102,8 +90,6 @@ const Statistics: React.FC = () => {
       label: "岗位统计",
       children: (
         <>
-          {/* 筛选区 */}
-          <div className={styles.toolbar}>{filters}</div>
           {/* 图表区 */}
           <div className={styles.jobCharts}>
             {/* 岗位类型占比 */}
@@ -112,11 +98,11 @@ const Statistics: React.FC = () => {
                 <PieChart>
                   <Pie data={jobTypeData} dataKey="value" nameKey="type" label>
                     {jobTypeData.map((_, index) => (
-                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={index} fill={COLORS[index % COLORS.length]}/>
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip/>
+                  <Legend/>
                 </PieChart>
               </ResponsiveContainer>
             </Card>
@@ -124,13 +110,13 @@ const Statistics: React.FC = () => {
             <Card title="各专业岗位数 Top5">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={majorJobTop5Data}>
-                  <XAxis dataKey="major" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
+                  <XAxis dataKey="major"/>
+                  <YAxis/>
+                  <Tooltip/>
+                  <Legend/>
                   <Bar dataKey="value" name="岗位数量">
                     {majorJobTop5Data.map((_, index) => (
-                      <Cell key={index} fill={JOB_BAR_COLORS[index % JOB_BAR_COLORS.length]} />
+                      <Cell key={index} fill={JOB_BAR_COLORS[index % JOB_BAR_COLORS.length]}/>
                     ))}
                   </Bar>
                 </BarChart>
@@ -151,7 +137,7 @@ const Statistics: React.FC = () => {
               <YAxis type="category" dataKey="major"/>
               <Tooltip/>
               <Legend/>
-              <Bar dataKey="salary" name="平均薪资（元/月）">
+              <Bar dataKey="value" name="平均薪资（元/月）">
                 {majorSalaryData.map((_, index) => (
                   <Cell
                     key={index}
@@ -173,7 +159,7 @@ const Statistics: React.FC = () => {
             <PieChart>
               <Pie data={complaintData} dataKey="value" nameKey="type" label>
                 {complaintData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={index} fill={COLORS[index % COLORS.length]}/>
                 ))}
               </Pie>
               <Tooltip/>
