@@ -23,10 +23,10 @@ export interface getApplicationListResponse {
       studentName: string; // 学生姓名
       studentId: string; // 学号
       studentMajor: string; // 学生专业
-      salary: number; // 薪资标准
-      salaryUnit: string; //薪资单位
-      total: number; // 缴纳金额 = 总金额 * 0.5
-      salaryPeriod: string; // 薪资发放周期
+      salary?: number; // 薪资标准
+      salaryUnit?: string; //薪资单位
+      total?: number; // 缴纳金额 = 总金额 * 0.5
+      salaryPeriod?: string; // 薪资发放周期
       status: "unpaid"|"ongoing"|"completed"|"appointment"; // 担保状态
     }>;
   };
@@ -41,6 +41,11 @@ export const getApplicationListApi = (data: getApplicationListParams) => {
 export const adminGetApplicationListApi = (data: getApplicationListParams) => {
   return request.post<getApplicationListResponse>("/admin_user/job_application_list", data);
 }
+
+//学生 获取/筛选 自己申请的岗位列表接口
+export const studentGetApplicationListApi = (data: getApplicationListParams) => {
+  return request.post<getApplicationListResponse>("/student_user/job_application_list", data);
+};
 
 // 企业 缴纳保障金、支付剩余薪资 接口的请求参数
 export interface payDepositParams {
@@ -59,3 +64,52 @@ export interface payDepositResponse {
 export const payDepositApi = (data: payDepositParams) => {
   return request.post<payDepositResponse>("/company_user/pay_deposit", data);
 };
+
+// 学生打卡接口的请求参数
+export interface AttendParams {
+  jobApplicationId: number;
+  location: string;
+}
+
+// 学生打卡、企业结束工作 接口的响应结果
+export interface AttendResponse {
+  code: number;
+  message: string;
+  data: null;
+}
+
+// 学生打卡接口
+export const attendApi = (data: AttendParams) => {
+  return request.post<AttendResponse>(
+    "/student_user/attendance",
+    data
+  );
+};
+
+// 获取学生考勤日历接口的单个考勤项
+export interface AttendanceCalendarItem {
+  attendance_date: string; // YYYY-MM-DD
+  location: string;        // 已反解析后的地点
+}
+
+// 获取学生考勤日历接口的响应结果
+export interface AttendanceCalendarResponse {
+  code: number;
+  message: string;
+  data: AttendanceCalendarItem[];
+}
+
+// 获取学生考勤日历接口
+export const getAttendanceCalendarApi = (jobApplicationId: number) => {
+  return request.get<AttendanceCalendarResponse>(
+    `/student_user/get_attendance_list?jobApplicationId=${jobApplicationId}`
+  );
+};
+
+// 企业结束工作接口
+export const endJobApi = (jobApplicationId: number) => {
+  return request.get<AttendResponse>(
+    `/company_user/finish_job?jobApplicationId=${jobApplicationId}`
+  );
+};
+
