@@ -23,10 +23,10 @@ export interface getApplicationListResponse {
       studentName: string; // 学生姓名
       studentId: string; // 学号
       studentMajor: string; // 学生专业
-      salary: number; // 薪资标准
-      salaryUnit: string; //薪资单位
-      total: number; // 缴纳金额 = 总金额 * 0.5
-      salaryPeriod: string; // 薪资发放周期
+      salary?: number; // 薪资标准
+      salaryUnit?: string; //薪资单位
+      total?: number; // 缴纳金额 = 总金额 * 0.5
+      salaryPeriod?: string; // 薪资发放周期
       status: "unpaid"|"ongoing"|"completed"|"appointment"; // 担保状态
     }>;
   };
@@ -41,6 +41,11 @@ export const getApplicationListApi = (data: getApplicationListParams) => {
 export const adminGetApplicationListApi = (data: getApplicationListParams) => {
   return request.post<getApplicationListResponse>("/admin_user/job_application_list", data);
 }
+
+//学生 获取/筛选 自己申请的岗位列表接口
+export const studentGetApplicationListApi = (data: getApplicationListParams) => {
+  return request.post<getApplicationListResponse>("/student_user/job_application_list", data);
+};
 
 // 企业 缴纳保障金、支付剩余薪资 接口的请求参数
 export interface payDepositParams {
