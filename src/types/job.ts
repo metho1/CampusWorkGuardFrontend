@@ -7,6 +7,12 @@ export const jobTypes = [
   {label: "全职", value: "full-time"},
 ];
 
+// 岗位类型映射表
+export const jobTypeMap: Record<string, string> = jobTypes.reduce((map, item) => {
+  map[item.value] = item.label;
+  return map;
+}, {} as Record<string, string>);
+
 // 薪资单位单选: 元/小时、元/天、元/月
 export const salaryUnits = [
   {label: "元/小时", value: "hour"},
@@ -35,7 +41,7 @@ export const experiences = [
   {label: "3年以上", value: ">3"},
 ];
 
-// 专业要求单选
+// 专业要求
 export const majors = [
   {label: "不限专业", value: "ANY"},
   {label: "计算机类", value: "CS"},
