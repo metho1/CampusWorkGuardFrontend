@@ -77,6 +77,6 @@ export interface ComplaintStatResponse {
 
 export const getComplaintStatApi = () => {
   return request.get<ComplaintStatResponse>(
-    "/admin_user/stat/complaint_ratio"
+    "/home/complaint_types"
   );
 };

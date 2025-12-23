@@ -1,22 +1,16 @@
 // src/components/StatCards/StatCards.tsx
 import {Card} from "antd";
-import {
-  ArrowDownOutlined,
-  ArrowUpOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  WarningOutlined
-} from "@ant-design/icons";
+import {CheckCircleOutlined, ClockCircleOutlined, WarningOutlined} from "@ant-design/icons";
 import styles from "./statCards.module.css";
 
-// 文字颜色： success: 绿色，warning: 橙色，info: 灰色，danger: 红色
-export type ExtraType = "success" | "warning" | "info" | "danger";
+// 文字颜色： success: 绿色，warning: 橙色，info: 灰色，submit: 蓝色
+export type ExtraType = "success" | "warning" | "info" | "submit";
 
 // 图标： check: 对号，loading: 处理中，warning: 警告，up: 上升，down: 下降
 export interface StatExtra {
   text: string;
   type?: ExtraType;
-  icon?: "check" | "loading" | "warning" | "up" | "down";
+  icon?: "check" | "loading" | "warning";
 }
 
 export interface StatItem {
@@ -29,8 +23,6 @@ const iconMap = {
   check: <CheckCircleOutlined/>,
   loading: <ClockCircleOutlined/>,
   warning: <WarningOutlined/>,
-  up: <ArrowUpOutlined/>,
-  down: <ArrowDownOutlined/>
 };
 
 const StatCards: React.FC<{ list: StatItem[] }> = ({list}) => {
