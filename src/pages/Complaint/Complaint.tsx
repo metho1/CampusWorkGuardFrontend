@@ -15,19 +15,9 @@ import {
   getComplaintListApi,
   processComplaintApi,
   resolveComplaintApi,
-  submitComplaintApi
+  submitComplaintApi,
+  getComplaintStatisticApi
 } from "@/api/complaint.ts";
-
-const cardList = [
-  {id: 1, value: 3, extra: 1},
-  {id: 2, value: 1, extra: 0},
-  {id: 3, value: 2, extra: 100},
-  {id: 4, value: 2.5, extra: 1.2}
-];
-
-const cardMap = Object.fromEntries(
-  cardList.map(item => [item.id, item])
-);
 
 const Complaint: React.FC = () => {
   const {user} = useUserStore();
@@ -52,6 +42,20 @@ const Complaint: React.FC = () => {
     companyDefense?: string;
     resultInfo?: string;
   }>({});
+  // 统计信息
+  const [statistic, setStatistic] = useState<{
+    submittedNums: number;
+    processedNums: number;
+    resolvedNums: number;
+    totalNums: number;
+    thirtyDaysNewNums: number;
+  }>({
+    submittedNums: 0,
+    processedNums: 0,
+    resolvedNums: 0,
+    totalNums: 0,
+    thirtyDaysNewNums: 0,
+  });
 
   // 获取投诉列表
   const fetchComplaintList = async (pageNo = 1) => {
@@ -72,10 +76,38 @@ const Complaint: React.FC = () => {
     }
   };
 
+  // 获取统计信息
+  const fetchComplaintStatisticList = async () => {
+    try {
+      const res = await getComplaintStatisticApi();
+      if (res.code === 200) {
+        setStatistic(res.data);
+      } else {
+        message.error(res.message || "获取统计信息失败");
+      }
+    } catch (err) {
+      message.error("获取统计信息失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 组件加载时获取初始列表
   useEffect(() => {
     fetchComplaintList(1);
+    fetchComplaintStatisticList();
   }, []);
+
+  const cardList = [
+    {id: 1, value: statistic.totalNums, extra: statistic.thirtyDaysNewNums},
+    {id: 2, value: statistic.submittedNums, extra: 0},
+    {id: 3, value: statistic.processedNums, extra: 0},
+    {id: 4, value: statistic.resolvedNums, extra: 100},
+  ];
+
+  const cardMap = Object.fromEntries(
+    cardList.map(item => [item.id, item])
+  );
 
   const onFinish = async (values: any) => {
     const params = {
@@ -91,6 +123,7 @@ const Complaint: React.FC = () => {
         message.success("投诉提交成功（等待企业和管理员处理）");
         setOpen(false);
         await fetchComplaintList(page);
+        await fetchComplaintStatisticList();
       } else {
         message.error(res.message || "提交失败");
       }
@@ -116,6 +149,7 @@ const Complaint: React.FC = () => {
             message.success("投诉撤销成功");
             const nextPage = list.length === 1 && page > 1 ? page - 1 : page;
             await fetchComplaintList(nextPage);
+            await fetchComplaintStatisticList();
           } else {
             message.error(res.message || "撤销失败");
           }
@@ -173,6 +207,7 @@ const Complaint: React.FC = () => {
           message.success("已回复投诉");
           setOpen(false);
           fetchComplaintList(page);
+          fetchComplaintStatisticList();
         } else {
           message.error(res.message);
         }
@@ -208,6 +243,7 @@ const Complaint: React.FC = () => {
           message.success("已判定投诉");
           setOpen(false);
           fetchComplaintList(page);
+          fetchComplaintStatisticList();
         } else {
           message.error(res.message);
         }
@@ -227,24 +263,24 @@ const Complaint: React.FC = () => {
       <StatCards
         list={[
           {
-            title: "我的投诉总数",
+            title: "投诉总数",
             value: cardMap[1]?.value,
             extra: {text: `近30天新增 ${cardMap[1]?.extra} 起`, type: "info"}
           },
           {
             title: "处理中投诉",
             value: cardMap[2]?.value,
-            extra: {text: "已受理，等待企业响应", type: "warning", icon: "loading"}
+            extra: {text: "已发起，等待企业响应", type: "submit", icon: "loading"}
+          },
+          {
+            title: "已处理投诉",
+            value: cardMap[3]?.value,
+            extra: {text: "已受理，等待管理员判定", type: "warning", icon: "loading"}
           },
           {
             title: "已解决投诉",
-            value: cardMap[3]?.value,
-            extra: {text: `满意度 ${cardMap[3]?.extra}%`, type: "success", icon: "check"}
-          },
-          {
-            title: "平均处理时长",
-            value: `${cardMap[4]?.value} 天`,
-            extra: {text: `较平台平均快 ${cardMap[4]?.extra} 天`, type: "info"}
+            value: cardMap[4]?.value,
+            extra: {text: `满意度 ${cardMap[4]?.extra}%`, type: "success", icon: "check"}
           }
         ]}
       />
@@ -380,8 +416,6 @@ const Complaint: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-
-
     </>
   );
 };

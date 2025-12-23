@@ -1,6 +1,6 @@
 // src/pages/Statistics/Statistics.tsx
 import React, {useEffect, useState} from "react";
-import {getJobTypeStatApi, getMajorJobTopApi, getMajorSalaryStatApi} from "@/api/statistics";
+import {getComplaintStatApi, getJobTypeStatApi, getMajorJobTopApi, getMajorSalaryStatApi} from "@/api/statistics";
 import {Button, Card, message, Space, Table, Tabs} from "antd";
 import {DownloadOutlined} from "@ant-design/icons";
 import {Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
@@ -8,13 +8,7 @@ import {jobTypeMap, majorMap} from "@/types/job";
 
 import PageHeader from "@/components/PageHeader/PageHeader.tsx";
 import styles from "@/pages/statistics/statistics.module.css";
-
-// 投诉类型占比
-const complaintData = [
-  {type: "拖欠薪资", value: 12},
-  {type: "虚假招聘", value: 6},
-  {type: "强制加班", value: 4},
-];
+import {complaintTypeMap} from "@/types/complaint.ts";
 
 const reportTableData = [
   {key: 1, name: "月度兼职市场分析报告", time: "2025-04", creator: "系统自动"},
@@ -43,7 +37,7 @@ const Statistics: React.FC = () => {
   const [jobTypeData, setJobTypeData] = useState<any[]>([]);
   const [majorJobTop5Data, setMajorJobTop5Data] = useState<any[]>([]);
   const [majorSalaryData, setMajorSalaryData] = useState<any[]>([]);
-  // const [complaintData, setComplaintData] = useState<any[]>([]);
+  const [complaintData, setComplaintData] = useState<any[]>([]);
 
   const fetchStatistics = async () => {
     try {
@@ -71,10 +65,14 @@ const Statistics: React.FC = () => {
         }));
         setMajorSalaryData(formattedData);
       }
-      // const complaintRes =  await getComplaintStatApi();
-      // if (complaintRes.code === 200) {
-      //   setComplaintData(complaintRes.data);
-      // }
+      const complaintRes = await getComplaintStatApi();
+      if (complaintRes.code === 200) {
+        const formattedData = complaintRes.data.map(item => ({
+          ...item,
+          type: complaintTypeMap[item.type] || item.type,
+        }));
+        setComplaintData(formattedData);
+      }
     } catch {
       message.error("数据加载失败");
     }

@@ -96,3 +96,21 @@ export interface resolveComplaintResponse {
 export const resolveComplaintApi = (data: resolveComplaintResponse) => {
   return request.post<normalResponse>("/admin_user/resolve_complaint", data);
 };
+
+// 获取投诉统计数据接口的响应结果
+export interface complaintStatisticResponse {
+  code: number;
+  message: string;
+  data: {
+    submittedNums: number; // 已提交投诉数
+    processedNums: number; // 已处理投诉数
+    resolvedNums: number; // 已解决投诉数
+    totalNums: number; // 总投诉数
+    thirtyDaysNewNums: number; // 近30天新增投诉数
+  };
+};
+
+// 获取投诉统计数据接口
+export const getComplaintStatisticApi = () => {
+  return request.get<complaintStatisticResponse>("/home/complaint_statistic");
+};
